@@ -1,0 +1,2962 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carburanti e Sistemi di Alimentazione Aeronautica</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05080f;
+    --bg2: #080d18;
+    --surface: #0d1525;
+    --surface2: #111e35;
+    --border: #1e3056;
+    --accent1: #00c2ff;
+    --accent2: #ff6b1a;
+    --accent3: #00e5a0;
+    --accent4: #ffd600;
+    --text: #d4e4f7;
+    --text-dim: #6b8ab0;
+    --text-muted: #3a5070;
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-body: 'Barlow', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --glow1: 0 0 30px rgba(0,194,255,0.15);
+    --glow2: 0 0 30px rgba(255,107,26,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    padding: 60px 40px 50px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse, rgba(0,194,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent1);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 6vw, 4.8rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent1) 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--text-dim);
+    max-width: 680px;
+    margin: 0 auto 14px;
+    line-height: 1.6;
+    font-weight: 300;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.9s forwards;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 40px;
+  }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-color 0.3s, box-shadow 0.3s;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .card.visible {
+    animation: cardReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+    background: var(--card-accent, var(--accent1));
+    transform: scaleX(0);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: left;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(0,194,255,0.04), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    border-color: var(--card-accent, var(--accent1));
+    box-shadow: var(--glow1), 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .card:hover::before { transform: scaleX(1); }
+  .card:hover::after { opacity: 1; }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    background: var(--card-accent-bg, rgba(0,194,255,0.1));
+    border: 1px solid var(--card-accent-border, rgba(0,194,255,0.2));
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  .card-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--card-accent, var(--accent1));
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 12px;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+
+  .card-desc {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 18px;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--card-accent-bg, rgba(0,194,255,0.08));
+    border: 1px solid var(--card-accent-border, rgba(0,194,255,0.15));
+    color: var(--card-accent, var(--accent1));
+    letter-spacing: 0.05em;
+  }
+
+  .card-arrow {
+    position: absolute;
+    bottom: 22px; right: 22px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--card-accent-bg, rgba(0,194,255,0.1));
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s, background 0.3s;
+  }
+
+  .card:hover .card-arrow {
+    transform: translate(3px,-3px);
+    background: var(--card-accent, var(--accent1));
+  }
+
+  .card:hover .card-arrow svg { stroke: #000; }
+
+  /* MODAL OVERLAY */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,8,15,0.85);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
+  }
+
+  .overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* MODAL */
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 860px;
+    margin: auto;
+    position: relative;
+    transform: scale(0.92) translateY(20px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+  }
+
+  .overlay.open .modal {
+    transform: scale(1) translateY(0);
+  }
+
+  .modal-header {
+    padding: 32px 36px 24px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--bg2) 100%);
+  }
+
+  .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--modal-accent, var(--accent1));
+  }
+
+  .modal-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--modal-accent, var(--accent1));
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.8;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 24px; right: 24px;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    color: var(--text-dim);
+  }
+
+  .modal-close:hover {
+    background: var(--border);
+    border-color: var(--text-dim);
+    color: #fff;
+  }
+
+  .modal-body {
+    padding: 32px 36px;
+    overflow-y: auto;
+    max-height: 70vh;
+  }
+
+  /* MODAL CONTENT STYLES */
+  .modal-body h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--modal-accent, var(--accent1));
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 28px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-body h3:first-child { margin-top: 0; }
+
+  .modal-body p {
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: var(--text-dim);
+    font-weight: 300;
+    margin-bottom: 14px;
+  }
+
+  .modal-body p strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .formula-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--modal-accent, var(--accent1));
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 16px 0;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  .formula-box .formula-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .example-box {
+    background: rgba(0, 229, 160, 0.04);
+    border: 1px solid rgba(0, 229, 160, 0.2);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 16px 0;
+  }
+
+  .example-box .example-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent3);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .example-box p {
+    font-size: 14px;
+    color: #9ee8cb;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+
+  .info-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .info-cell .cell-val {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--modal-accent, var(--accent1));
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .info-cell .cell-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* SVG DIAGRAMS */
+  .diagram-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  .diagram-wrap svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+  }
+
+  .diagram-caption {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  /* FUEL TABLE */
+  .fuel-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+
+  .fuel-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .fuel-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    font-weight: 300;
+    vertical-align: top;
+  }
+
+  .fuel-table tr:last-child td { border-bottom: none; }
+
+  .fuel-table td:first-child {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  .badge-blue { background: rgba(0,194,255,0.12); color: var(--accent1); border: 1px solid rgba(0,194,255,0.2); }
+  .badge-orange { background: rgba(255,107,26,0.12); color: var(--accent2); border: 1px solid rgba(255,107,26,0.2); }
+  .badge-green { background: rgba(0,229,160,0.12); color: var(--accent3); border: 1px solid rgba(0,229,160,0.2); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px); }
+  }
+
+  @keyframes cardReveal {
+    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(30px); }
+  }
+
+  /* SCROLLBAR */
+  .modal-body::-webkit-scrollbar { width: 6px; }
+  .modal-body::-webkit-scrollbar-track { background: var(--surface); }
+  .modal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .modal-body::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 30px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  /* INTERACTIVE FLOW DIAGRAM */
+  .flow-container {
+    background: #060b14;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flow-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+
+  .flow-btn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .flow-btn:hover { border-color: var(--accent1); color: var(--accent1); }
+  .flow-btn.active { background: var(--accent1); color: #000; border-color: var(--accent1); font-weight: 700; }
+  .flow-btn.active-orange { background: #ff6b1a; color: #000; border-color: #ff6b1a; font-weight: 700; }
+  .flow-btn.active-green { background: #00e5a0; color: #000; border-color: #00e5a0; font-weight: 700; }
+  .flow-btn.active-purple { background: #c084fc; color: #000; border-color: #c084fc; font-weight: 700; }
+
+  .flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .legend-line {
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  /* Animated flow path */
+  @keyframes flowDash {
+    to { stroke-dashoffset: -20; }
+  }
+
+  .flow-active {
+    animation: flowDash 0.6s linear infinite;
+    stroke-dasharray: 8 4;
+  }
+
+  .flow-active-slow {
+    animation: flowDash 1.2s linear infinite;
+    stroke-dasharray: 8 4;
+  }
+
+  /* Tank level animation */
+  @keyframes tankPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  .tank-active { animation: tankPulse 1.5s ease-in-out infinite; }
+
+  /* MHDD display style */
+  .mhdd-screen {
+    background: #000;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--font-mono);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mhdd-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,80,0.01) 2px, rgba(0,255,80,0.01) 4px);
+    pointer-events: none;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .hero { padding: 40px 20px 36px; }
+    .grid { padding: 20px; gap: 14px; }
+    .modal-header, .modal-body { padding: 22px 20px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Sistemi Aeronautici · Capitolo 7</div>
+  <h1 class="hero-title">CARBURANTI E<br>IMPIANTO COMBUSTIBILE</h1>
+  <p class="hero-sub">Architettura completa dei sistemi di alimentazione aeronautica: tipologie di carburante, serbatoi, distribuzione e calcolo delle pompe. Dalla chimica alla progettazione di bordo.</p>
+  <div class="hero-hint">↓ Seleziona una sezione per approfondire</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CARDS GRID -->
+<div class="grid" id="cardGrid">
+
+  <!-- CARD 1: Combustibili -->
+  <div class="card" style="--card-accent: #00c2ff; --card-accent-bg: rgba(0,194,255,0.08); --card-accent-border: rgba(0,194,255,0.2);" data-modal="m1">
+    <div class="card-num">§ 01</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00c2ff" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 12c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4"/><circle cx="12" cy="12" r="2"/></svg>
+    </div>
+    <div class="card-title">Combustibili Aeronautici</div>
+    <div class="card-desc">Chimica della combustione, potere calorifico e classificazione dei carburanti per aviazione: Jet A-1, Avgas, SAF e varianti militari.</div>
+    <div class="card-tags">
+      <span class="tag">Combustione</span>
+      <span class="tag">Potere Calorifico</span>
+      <span class="tag">Jet A-1</span>
+    </div>
+    <div class="card-arrow">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#00c2ff" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 2: Standard AFQRJOS -->
+  <div class="card" style="--card-accent: #ffd600; --card-accent-bg: rgba(255,214,0,0.08); --card-accent-border: rgba(255,214,0,0.2);" data-modal="m2">
+    <div class="card-num">§ 02</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffd600" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><polyline points="9 7 9 12 11 10 13 12 13 7"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
+    </div>
+    <div class="card-title">Standard AFQRJOS</div>
+    <div class="card-desc">Checklist JIG, requisiti qualitativi internazionali, conformità DEF STAN 91-091 e ASTM D1655. La catena di custodia del carburante.</div>
+    <div class="card-tags">
+      <span class="tag" style="--card-accent: #ffd600; --card-accent-bg: rgba(255,214,0,0.08); --card-accent-border: rgba(255,214,0,0.2); background: rgba(255,214,0,0.08); border-color: rgba(255,214,0,0.2); color: #ffd600;">JIG</span>
+      <span class="tag" style="background: rgba(255,214,0,0.08); border-color: rgba(255,214,0,0.2); color: #ffd600;">Qualità</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(255,214,0,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#ffd600" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 3: Collocazione Serbatoi -->
+  <div class="card" style="--card-accent: #ff6b1a; --card-accent-bg: rgba(255,107,26,0.08); --card-accent-border: rgba(255,107,26,0.2);" data-modal="m3">
+    <div class="card-num">§ 03</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6b1a" stroke-width="2"><rect x="2" y="8" width="20" height="8" rx="1"/><path d="M6 8V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+    </div>
+    <div class="card-title">Collocazione dei Serbatoi</div>
+    <div class="card-desc">Posizione ottimale per il centraggio del velivolo, serbatoi alari vs fusoliera, influenza sul baricentro e gestione del carburante in volo.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(255,107,26,0.08); border-color: rgba(255,107,26,0.2); color: #ff6b1a;">Centraggio</span>
+      <span class="tag" style="background: rgba(255,107,26,0.08); border-color: rgba(255,107,26,0.2); color: #ff6b1a;">Baricentro</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(255,107,26,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#ff6b1a" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 4: Tipi di Serbatoi -->
+  <div class="card" style="--card-accent: #00e5a0; --card-accent-bg: rgba(0,229,160,0.08); --card-accent-border: rgba(0,229,160,0.2);" data-modal="m4">
+    <div class="card-num">§ 04</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5a0" stroke-width="2"><ellipse cx="12" cy="8" rx="8" ry="4"/><path d="M4 8v8c0 2.21 3.58 4 8 4s8-1.79 8-4V8"/></svg>
+    </div>
+    <div class="card-title">Tipi di Serbatoi</div>
+    <div class="card-desc">Confronto tecnico tra serbatoi integrali (struttura alare), flessibili (materiale sintetico) e rigidi (fusoliera). Architettura interna e componenti.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(0,229,160,0.08); border-color: rgba(0,229,160,0.2); color: #00e5a0;">Integrali</span>
+      <span class="tag" style="background: rgba(0,229,160,0.08); border-color: rgba(0,229,160,0.2); color: #00e5a0;">Flessibili</span>
+      <span class="tag" style="background: rgba(0,229,160,0.08); border-color: rgba(0,229,160,0.2); color: #00e5a0;">Rigidi</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(0,229,160,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#00e5a0" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 5: Rifornimento -->
+  <div class="card" style="--card-accent: #c084fc; --card-accent-bg: rgba(192,132,252,0.08); --card-accent-border: rgba(192,132,252,0.2);" data-modal="m5">
+    <div class="card-num">§ 05</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5 1.3-8.44 4.88-10.06 8.06C4.5 17.6 5 20 5 20"/><path d="M2 9.5C4 9 5.5 8.5 7 6c.2-.4.5-1 .8-1.4"/><polyline points="5 11 9 9 9 13"/><circle cx="16.5" cy="17.5" r="2.5"/></svg>
+    </div>
+    <div class="card-title">Rifornimento</div>
+    <div class="card-desc">Bocchettoni di riempimento, rifornimento per gravità vs pressurizzato, collegamento elettrico di terra, volume di espansione e rifornimento in volo.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(192,132,252,0.08); border-color: rgba(192,132,252,0.2); color: #c084fc;">Pressurizzato</span>
+      <span class="tag" style="background: rgba(192,132,252,0.08); border-color: rgba(192,132,252,0.2); color: #c084fc;">Gravità</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(192,132,252,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#c084fc" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 6: Architettura Interna -->
+  <div class="card" style="--card-accent: #38bdf8; --card-accent-bg: rgba(56,189,248,0.08); --card-accent-border: rgba(56,189,248,0.2);" data-modal="m6">
+    <div class="card-num">§ 06</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 6V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2"/><line x1="7" y1="11" x2="7" y2="13"/><line x1="11" y1="11" x2="11" y2="13"/><line x1="15" y1="11" x2="15" y2="13"/></svg>
+    </div>
+    <div class="card-title">Architettura Interna</div>
+    <div class="card-desc">Paratie anti-sbattimento, pozzetto di raccolta, sfiati, filtri, pompe ausiliarie e valvole di non-ritorno. Funzionamento in volo rovescio.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.2); color: #38bdf8;">Anti-slosh</span>
+      <span class="tag" style="background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.2); color: #38bdf8;">Pozzetto</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(56,189,248,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 7: Misura Combustibile -->
+  <div class="card" style="--card-accent: #fb923c; --card-accent-bg: rgba(251,146,60,0.08); --card-accent-border: rgba(251,146,60,0.2);" data-modal="m7">
+    <div class="card-num">§ 07</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <div class="card-title">Misura del Combustibile</div>
+    <div class="card-desc">Sonde a galleggiante vs sonde capacitive (Boeing 777 ultrasoniche). Correlazione livello-volume, curva di taratura e compensazione termica della densità.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(251,146,60,0.08); border-color: rgba(251,146,60,0.2); color: #fb923c;">Capacitive</span>
+      <span class="tag" style="background: rgba(251,146,60,0.08); border-color: rgba(251,146,60,0.2); color: #fb923c;">Ultrasoniche</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(251,146,60,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fb923c" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 8: Rete Distribuzione -->
+  <div class="card" style="--card-accent: #f472b6; --card-accent-bg: rgba(244,114,182,0.08); --card-accent-border: rgba(244,114,182,0.2);" data-modal="m8">
+    <div class="card-num">§ 08</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="12" y1="7" x2="12" y2="17"/></svg>
+    </div>
+    <div class="card-title">Rete di Distribuzione</div>
+    <div class="card-desc">Architettura monomotore vs plurimotore, sistema crossfeed, valvole di intercettazione e gestione delle avarie di serbatoio. Ridondanza dell'alimentazione.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(244,114,182,0.08); border-color: rgba(244,114,182,0.2); color: #f472b6;">Crossfeed</span>
+      <span class="tag" style="background: rgba(244,114,182,0.08); border-color: rgba(244,114,182,0.2); color: #f472b6;">Ridondanza</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(244,114,182,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#f472b6" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 9: Calcolo Pompe -->
+  <div class="card" style="--card-accent: #a3e635; --card-accent-bg: rgba(163,230,53,0.08); --card-accent-border: rgba(163,230,53,0.2);" data-modal="m9">
+    <div class="card-num">§ 09</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 1 1-14.14 0"/></svg>
+    </div>
+    <div class="card-title">Calcolo dell'Impianto</div>
+    <div class="card-desc">Pompe centrifughe fluidodinamiche, diagramma pressione-portata, formula di progetto e condizione di funzionamento. Pompe in serie e in parallelo.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(163,230,53,0.08); border-color: rgba(163,230,53,0.2); color: #a3e635;">Pompe</span>
+      <span class="tag" style="background: rgba(163,230,53,0.08); border-color: rgba(163,230,53,0.2); color: #a3e635;">Portata</span>
+      <span class="tag" style="background: rgba(163,230,53,0.08); border-color: rgba(163,230,53,0.2); color: #a3e635;">Pressione</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(163,230,53,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#a3e635" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+
+  <!-- CARD 10: Sistema Carburante EFA/Typhoon -->
+  <div class="card" style="--card-accent: #e879f9; --card-accent-bg: rgba(232,121,249,0.08); --card-accent-border: rgba(232,121,249,0.2);" data-modal="m10">
+    <div class="card-num">§ 10</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e879f9" stroke-width="2"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+    </div>
+    <div class="card-title">Sistema Carburante EFA Typhoon</div>
+    <div class="card-desc">Architettura del sistema combustibile del caccia Eurofighter: 2 gruppi fusoliera, 4 serbatoi alari, 5 serbatoi di trasferimento interni, serbatoi esterni jettisonabili da 1000 L.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(232,121,249,0.08); border-color: rgba(232,121,249,0.2); color: #e879f9;">Eurofighter</span>
+      <span class="tag" style="background: rgba(232,121,249,0.08); border-color: rgba(232,121,249,0.2); color: #e879f9;">Militare</span>
+      <span class="tag" style="background: rgba(232,121,249,0.08); border-color: rgba(232,121,249,0.2); color: #e879f9;">MHDD</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(232,121,249,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#e879f9" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 11: Trasferimento Carburante Interattivo -->
+  <div class="card" style="--card-accent: #22d3ee; --card-accent-bg: rgba(34,211,238,0.08); --card-accent-border: rgba(34,211,238,0.2);" data-modal="m11">
+    <div class="card-num">§ 11</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/><path d="M5 5v14"/></svg>
+    </div>
+    <div class="card-title">Trasferimento Carburante ⚡</div>
+    <div class="card-desc">Simulazione interattiva del flusso: trasferimento automatico sequenziale (serbatoi esterni → trasferimento → alari → fusoliera). Fasi Stage 1 e Stage 2. Crossfeed.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(34,211,238,0.08); border-color: rgba(34,211,238,0.2); color: #22d3ee;">Interattivo</span>
+      <span class="tag" style="background: rgba(34,211,238,0.08); border-color: rgba(34,211,238,0.2); color: #22d3ee;">Stage 1/2</span>
+      <span class="tag" style="background: rgba(34,211,238,0.08); border-color: rgba(34,211,238,0.2); color: #22d3ee;">Animazione</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(34,211,238,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#22d3ee" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 12: Pressurizzazione e Vent -->
+  <div class="card" style="--card-accent: #4ade80; --card-accent-bg: rgba(74,222,128,0.08); --card-accent-border: rgba(74,222,128,0.2);" data-modal="m12">
+    <div class="card-num">§ 12</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+    </div>
+    <div class="card-title">Pressurizzazione e Vent ⚡</div>
+    <div class="card-desc">Simulazione interattiva del sistema di pressurizzazione serbatoi con bleed air LP. Vent package nella deriva con valvole HP/LP, inward/outward vent, anti-ebollizione ad alta quota.</div>
+    <div class="card-tags">
+      <span class="tag" style="background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.2); color: #4ade80;">Bleed Air</span>
+      <span class="tag" style="background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.2); color: #4ade80;">Interattivo</span>
+    </div>
+    <div class="card-arrow" style="background: rgba(74,222,128,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#4ade80" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+
+  <!-- CARD 13: Fuel Cooling System -->
+  <div class="card" style="--card-accent: #f87171; --card-accent-bg: rgba(248,113,113,0.08); --card-accent-border: rgba(248,113,113,0.2);" data-modal="m13">
+    <div class="card-num">§ 13</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+    </div>
+    <div class="card-title">Fuel Cooling System</div>
+    <div class="card-desc">Il carburante come heat sink per oli idraulici, generatore e gearbox. Ciclo FCOC, raffreddamento ad aria ACFC, temperatura massima 95°C e raffreddamento del DECU.</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.2);color:#f87171;">FCOC</span>
+      <span class="tag" style="background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.2);color:#f87171;">95°C Limit</span>
+    </div>
+    <div class="card-arrow" style="background:rgba(248,113,113,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#f87171" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 14: Engine Fuel Supply -->
+  <div class="card" style="--card-accent: #34d399; --card-accent-bg: rgba(52,211,153,0.08); --card-accent-border: rgba(52,211,153,0.2);" data-modal="m14">
+    <div class="card-num">§ 14</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+    </div>
+    <div class="card-title">Engine Fuel Supply</div>
+    <div class="card-desc">Alimentazione motori EJ200: boost pumps AC nei collector tank, pompa DC d'emergenza, valvola crossfeed NORM/OPEN, LP cock switches e alimentazione APU per gravità.</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.2);color:#34d399;">Boost Pumps</span>
+      <span class="tag" style="background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.2);color:#34d399;">LP Cock</span>
+    </div>
+    <div class="card-arrow" style="background:rgba(52,211,153,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#34d399" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 15: Rifornimento AAR -->
+  <div class="card" style="--card-accent: #fb923c; --card-accent-bg: rgba(251,146,60,0.08); --card-accent-border: rgba(251,146,60,0.2);" data-modal="m15">
+    <div class="card-num">§ 15</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="card-title">Rifornimento a Terra & AAR</div>
+    <div class="card-desc">Rifornimento pressurizzato single-point, sequenza TOT/INT/SIM, defueling, rifornimento aria-aria (AAR) con sonda IFR. Sequenza automatica e controllo manuale REFU STRT/STOP.</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(251,146,60,0.08);border-color:rgba(251,146,60,0.2);color:#fb923c;">AAR</span>
+      <span class="tag" style="background:rgba(251,146,60,0.08);border-color:rgba(251,146,60,0.2);color:#fb923c;">Single Point</span>
+    </div>
+    <div class="card-arrow" style="background:rgba(251,146,60,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fb923c" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+  <!-- CARD 16: MHDD Controlli & Avvisi -->
+  <div class="card" style="--card-accent: #818cf8; --card-accent-bg: rgba(129,140,248,0.08); --card-accent-border: rgba(129,140,248,0.2);" data-modal="m16">
+    <div class="card-num">§ 16</div>
+    <div class="card-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h.01M12 8h.01M17 8h.01M7 12h10"/></svg>
+    </div>
+    <div class="card-title">MHDD · Controlli & Avvisi ⚡</div>
+    <div class="card-desc">Display interattivo MHDD/FUEL: simbologia completa, avvisi DWP con voce, warning BINGO, LP COCK, crossfeed, GUH indicators e MHDD/ACUE prompts. Pannello controlli Fig. 1.49.</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(129,140,248,0.08);border-color:rgba(129,140,248,0.2);color:#818cf8;">Interattivo</span>
+      <span class="tag" style="background:rgba(129,140,248,0.08);border-color:rgba(129,140,248,0.2);color:#818cf8;">DWP Warnings</span>
+      <span class="tag" style="background:rgba(129,140,248,0.08);border-color:rgba(129,140,248,0.2);color:#818cf8;">BINGO</span>
+    </div>
+    <div class="card-arrow" style="background:rgba(129,140,248,0.1);">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#818cf8" stroke-width="2"><path d="M2 10L10 2M4 2h6v6"/></svg>
+    </div>
+  </div>
+
+</div><!-- end grid -->
+
+<!-- MODAL OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modalHeader">
+      <div class="modal-eyebrow" id="modalEyebrow">Sezione</div>
+      <div class="modal-title" id="modalTitle">Titolo</div>
+      <button class="modal-close" id="modalClose" aria-label="Chiudi">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  IMPIANTO COMBUSTIBILE · CAP. 7 · I. MOIR & F. VAGNARELLI · ELABORAZIONE INTERATTIVA
+</footer>
+
+<!-- MODAL CONTENT DATA -->
+<script>
+const modals = {
+
+  m1: {
+    eyebrow: '§ 01 · Chimica & Classificazione',
+    title: 'COMBUSTIBILI AERONAUTICI',
+    accent: '#00c2ff',
+    body: `
+      <h3>Definizione e Chimica</h3>
+      <p>I <strong>combustibili</strong> sono sostanze principalmente a base di carbonio (C) e idrogeno (H) capaci di bruciare in presenza di ossigeno (comburente), sprigionando energia termica. La reazione chimica alla base è detta <strong>combustione</strong>.</p>
+      <p>La reazione generale di combustione di un idrocarburo C<sub>n</sub>H<sub>m</sub> è:</p>
+      <div class="formula-box">
+        <div class="formula-label">Reazione di combustione completa</div>
+        CₙHₘ + (n + m/4) O₂ → n CO₂ + (m/2) H₂O + Q<br><br>
+        Per il cherosene (approssimato come C₁₂H₂₆):<br>
+        C₁₂H₂₆ + 18.5 O₂ → 12 CO₂ + 13 H₂O + Q
+      </div>
+
+      <h3>Potere Calorifico</h3>
+      <p>La qualità energetica di un combustibile è definita dal <strong>potere calorifico</strong>: la quantità di calore Q sprigionata dalla combustione completa di un'unità di misura del combustibile.</p>
+      <div class="formula-box">
+        <div class="formula-label">Unità di misura</div>
+        Solido   → Q [kcal/kg]<br>
+        Liquido  → Q [kcal/m³] oppure [MJ/kg]<br>
+        Gassoso  → Q [kcal/m³]<br><br>
+        Jet A-1: Q ≈ 43.2 MJ/kg  (~10,300 kcal/kg)
+      </div>
+      <p>Si distingue tra <strong>PCI</strong> (Potere Calorifico Inferiore: il vapore acqueo rimane gassoso) e <strong>PCS</strong> (Superiore: vapore acqueo condensato). In aviazione si usa il PCI.</p>
+
+      <h3>Classificazione Carburanti Aeronautici</h3>
+      <table class="fuel-table">
+        <thead><tr><th>Carburante</th><th>Utilizzo</th><th>Note Tecniche</th></tr></thead>
+        <tbody>
+          <tr><td>Jet A-1 <span class="badge badge-blue">Standard</span></td><td>Turbine, turboelica, aerei di linea</td><td>Cherosene, punto congel. ≤ −47°C, basso zolfo. Più usato al mondo.</td></tr>
+          <tr><td>Avgas 100LL <span class="badge badge-orange">Pistoni</span></td><td>Aviazione generale, motori a pistoni</td><td>"LL" = Low Lead. Ottano 100/130. Colore azzurro per identificazione.</td></tr>
+          <tr><td>MOGAS</td><td>ULM, motori certificati (es. Rotax)</td><td>Benzina verde per autotrazione. Nessun piombo. Approvazione motore richiesta.</td></tr>
+          <tr><td>Jet B / JP-4</td><td>Regioni fredde, militare NATO</td><td>Nafta/cherosene, alta volatilità. Più difficile da gestire.</td></tr>
+          <tr><td>JP-8</td><td>Militare (NATO standard)</td><td>Simile Jet A-1 + additivi anticorrosione, anti-ghiaccio e lubrificanti.</td></tr>
+          <tr><td>SAF <span class="badge badge-green">Futuro</span></td><td>Drop-in con cherosene fossile</td><td>Riduce CO₂ fino all'80%. Fonti: rifiuti, olio da cucina, biomasse.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>SAF: Sustainable Aviation Fuel</h3>
+      <p>Il SAF è un <strong>biocarburante rinnovabile</strong> prodotto da fonti non fossili (rifiuti urbani, oli vegetali esausti, biomasse lignocellulosiche). Viene utilizzato come "drop-in", cioè miscelato al cherosene tradizionale senza modificare i motori o le infrastrutture.</p>
+      <div class="info-grid">
+        <div class="info-cell"><div class="cell-val" style="color:#00e5a0">−80%</div><div class="cell-label">riduz. CO₂ max</div></div>
+        <div class="info-cell"><div class="cell-val" style="color:#00c2ff">50%</div><div class="cell-label">blend max attuale</div></div>
+        <div class="info-cell"><div class="cell-val" style="color:#ffd600">2050</div><div class="cell-label">obiettivo net-zero</div></div>
+      </div>
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Boeing 787 & SAF</div>
+        <p>Il Boeing 787 Dreamliner può operare con fino al 50% di SAF miscelato. In un volo Roma–New York (~11h, ~70 t carburante) con 50% SAF, la riduzione di CO₂ può superare le 28 tonnellate per singolo volo rispetto al solo Jet A-1.</p>
+      </div>
+    `
+  },
+
+  m2: {
+    eyebrow: '§ 02 · Normativa Internazionale',
+    title: 'STANDARD AFQRJOS',
+    accent: '#ffd600',
+    body: `
+      <h3>Cos'è l'AFQRJOS</h3>
+      <p><strong>AFQRJOS</strong> (Aviation Fuel Quality Requirements for Jointly Operated Systems) è l'insieme degli standard internazionali più stringenti per la qualità del carburante aeronautico. È la cosiddetta <strong>"Checklist JIG"</strong> (Joint Inspection Group).</p>
+      <p>Garantisce che il carburante fornito in ogni aeroporto del mondo sia <strong>sicuro, di alta qualità e costante</strong>, indipendentemente dal fornitore o dalla nazione di origine.</p>
+
+      <h3>Struttura Normativa</h3>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+          <!-- AFQRJOS al centro -->
+          <rect x="240" y="80" width="200" height="60" rx="8" fill="#ffd60018" stroke="#ffd600" stroke-width="1.5"/>
+          <text x="340" y="106" text-anchor="middle" fill="#ffd600" font-size="13" font-weight="700">AFQRJOS</text>
+          <text x="340" y="124" text-anchor="middle" fill="#ffd600" font-size="10" opacity="0.7">Checklist JIG</text>
+
+          <!-- DEF STAN -->
+          <rect x="40" y="80" width="160" height="60" rx="8" fill="#00c2ff18" stroke="#00c2ff" stroke-width="1.5"/>
+          <text x="120" y="106" text-anchor="middle" fill="#00c2ff" font-size="12" font-weight="600">DEF STAN 91-091</text>
+          <text x="120" y="122" text-anchor="middle" fill="#6b8ab0" font-size="10">Standard UK (MoD)</text>
+          <line x1="200" y1="110" x2="240" y2="110" stroke="#ffd600" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <!-- ASTM -->
+          <rect x="480" y="80" width="160" height="60" rx="8" fill="#ff6b1a18" stroke="#ff6b1a" stroke-width="1.5"/>
+          <text x="560" y="106" text-anchor="middle" fill="#ff6b1a" font-size="12" font-weight="600">ASTM D1655</text>
+          <text x="560" y="122" text-anchor="middle" fill="#6b8ab0" font-size="10">Standard USA</text>
+          <line x1="440" y1="110" x2="480" y2="110" stroke="#ffd600" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <!-- Aeroporti -->
+          <rect x="110" y="190" width="130" height="24" rx="5" fill="#1e3056" stroke="#3a5070"/>
+          <text x="175" y="206" text-anchor="middle" fill="#6b8ab0" font-size="10">Aeroporti Europei</text>
+          <line x1="175" y1="190" x2="300" y2="140" stroke="#3a5070" stroke-dasharray="3,3"/>
+
+          <rect x="450" y="190" width="120" height="24" rx="5" fill="#1e3056" stroke="#3a5070"/>
+          <text x="510" y="206" text-anchor="middle" fill="#6b8ab0" font-size="10">Aeroporti USA</text>
+          <line x1="510" y1="190" x2="380" y2="140" stroke="#3a5070" stroke-dasharray="3,3"/>
+
+          <!-- Bulletins -->
+          <text x="340" y="165" text-anchor="middle" fill="#3a5070" font-size="10">Aggiornato tramite Bulletins JIG</text>
+
+          <!-- Label -->
+          <text x="340" y="30" text-anchor="middle" fill="#6b8ab0" font-size="11" letter-spacing="2">GERARCHIA NORMATIVA</text>
+        </svg>
+        <div class="diagram-caption">FIG. A · Struttura dello standard AFQRJOS/JIG</div>
+      </div>
+
+      <h3>Requisiti Chiave</h3>
+      <p>Prima che il combustibile possa essere caricato su un velivolo, deve soddisfare criteri rigorosi di:</p>
+      <p>• <strong>Qualità chimica:</strong> purezza, assenza di contaminanti, contenuto d'acqua ≤ 30 mg/kg</p>
+      <p>• <strong>Punto di congelamento:</strong> Jet A-1 deve avere punto congelamento ≤ −47°C</p>
+      <p>• <strong>Densità a 15°C:</strong> 775–840 kg/m³ per Jet A-1</p>
+      <p>• <strong>Tracciabilità:</strong> ogni lotto di carburante deve essere documentato dall'origine alla consegna</p>
+      <p>• <strong>Movimentazione:</strong> filtri, separatori acqua/carburante, bonding elettrico</p>
+
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Tamoil Italia</div>
+        <p>In Italia, fornitori come Tamoil certificano i propri lotti di Jet A-1 dichiarandoli conformi all'ultima versione AFQRJOS. Ogni lotto è accompagnato da un certificato di analisi (CoA) con tutti i parametri fisico-chimici rilevati in laboratorio prima della spedizione all'aeroporto.</p>
+      </div>
+    `
+  },
+
+  m3: {
+    eyebrow: '§ 03 · Progettazione',
+    title: 'COLLOCAZIONE DEI SERBATOI',
+    accent: '#ff6b1a',
+    body: `
+      <h3>Importanza della Posizione</h3>
+      <p>Il combustibile può rappresentare una <strong>percentuale sensibile del peso a pieno carico</strong> di un velivolo. Ad esempio, su un Boeing 737-800 circa il 35% del MTOW può essere carburante. La sua posizione influenza direttamente la <strong>posizione del baricentro (CG)</strong>.</p>
+
+      <h3>Effetto sul Centraggio</h3>
+      <p>La posizione del CG deve rimanere entro limiti prestabiliti per tutta la durata del volo. Man mano che il combustibile viene consumato, il CG si sposta. Il progettista deve quindi garantire che questo spostamento resti entro la finestra operativa.</p>
+      <div class="formula-box">
+        <div class="formula-label">Spostamento baricentro per consumo carburante</div>
+        Δx_CG = (m_carb × d_carb) / m_totale_residuo<br><br>
+        dove d_carb = distanza del centro del serbatoio dal CG iniziale<br>
+        Con serbatoi alari simmetrici: d_carb ≈ 0 → Δx_CG ≈ 0 ✓
+      </div>
+
+      <h3>Soluzione Tipica: Serbatoi Alari</h3>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Fusoliera -->
+          <ellipse cx="340" cy="100" rx="60" ry="22" fill="#1e3056" stroke="#3a5070" stroke-width="1.5"/>
+          <text x="340" y="104" text-anchor="middle" fill="#6b8ab0" font-size="10">Fusoliera</text>
+          <!-- Ala sinistra -->
+          <path d="M300 100 L60 115 L60 125 L300 115 Z" fill="#111e35" stroke="#3a5070" stroke-width="1"/>
+          <!-- Ala destra -->
+          <path d="M380 100 L620 115 L620 125 L380 115 Z" fill="#111e35" stroke="#3a5070" stroke-width="1"/>
+          <!-- Serbatoio sx esterno -->
+          <path d="M90 113 L180 112 L180 123 L90 124 Z" fill="#ff6b1a22" stroke="#ff6b1a" stroke-width="1.5"/>
+          <text x="135" y="121" text-anchor="middle" fill="#ff6b1a" font-size="8.5">Tank L-ext</text>
+          <!-- Serbatoio sx centro -->
+          <path d="M200 111 L295 110 L295 122 L200 122 Z" fill="#ff6b1a22" stroke="#ff6b1a" stroke-width="1.5"/>
+          <text x="247" y="119" text-anchor="middle" fill="#ff6b1a" font-size="8.5">Tank L-ctr</text>
+          <!-- Serbatoio sx dx -->
+          <path d="M385 110 L480 111 L480 122 L385 122 Z" fill="#ff6b1a22" stroke="#ff6b1a" stroke-width="1.5"/>
+          <text x="432" y="119" text-anchor="middle" fill="#ff6b1a" font-size="8.5">Tank R-ctr</text>
+          <!-- Serbatoio dx esterno -->
+          <path d="M500 112 L590 113 L590 124 L500 123 Z" fill="#ff6b1a22" stroke="#ff6b1a" stroke-width="1.5"/>
+          <text x="545" y="121" text-anchor="middle" fill="#ff6b1a" font-size="8.5">Tank R-ext</text>
+          <!-- CG arrow -->
+          <line x1="340" y1="78" x2="340" y2="62" stroke="#ffd600" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="340" y="56" text-anchor="middle" fill="#ffd600" font-size="9">CG</text>
+          <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ffd600"/></marker></defs>
+          <!-- label -->
+          <text x="340" y="175" text-anchor="middle" fill="#3a5070" font-size="10" letter-spacing="1">CONFIGURAZIONE TIPICA SERBATOI ALARI</text>
+        </svg>
+        <div class="diagram-caption">FIG. 7.1 · Collocazione serbatoi in configurazione bimotore di linea</div>
+      </div>
+
+      <p>I serbatoi alari offrono: uso di volume non utilizzabile per altro, CG del carburante vicino al CG del velivolo, <strong>riduzione del carico alare</strong> (bending relief: il peso del carburante alleggerisce la struttura alare in volo).</p>
+
+      <h3>Serbatoi in Fusoliera</h3>
+      <p>Usati quando l'ala ha spessore ridotto (velivoli supersonici) o per garantire elevata manovrabilità in rollio (riduzione momento di inerzia). Richiedono pompe di trasferimento per mantenere il centraggio.</p>
+
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Concorde</div>
+        <p>Il Concorde impiegava 13 serbatoi (5 in ala, 5 in fusoliera, 3 in coda). Durante l'accelerazione a velocità supersonica, il CG si spostava di circa 2 m verso prua a causa delle variazioni aerodinamiche. Il sistema di gestione carburante trasferiva automaticamente carburante nei serbatoi di coda per compensare, senza intervento del pilota.</p>
+      </div>
+    `
+  },
+
+  m4: {
+    eyebrow: '§ 04 · Struttura Fisica',
+    title: 'TIPI DI SERBATOI',
+    accent: '#00e5a0',
+    body: `
+      <h3>Classificazione</h3>
+      <p>I serbatoi aeronautici si suddividono in tre categorie principali, ciascuna con caratteristiche strutturali, vantaggi e limitazioni specifiche.</p>
+
+      <h3>1 — Serbatoi Integrali</h3>
+      <p>I <strong>serbatoi integrali</strong> sono ricavati direttamente dalla struttura dell'ala, sigillando completamente il vano alare. Non esistono come contenitori separati: l'ala stessa è il serbatoio.</p>
+      <p>✔ <strong>Vantaggi:</strong> peso minimo, massimo volume utilizzabile, nessun contenitore aggiuntivo.</p>
+      <p>✘ <strong>Svantaggi:</strong> produzione complessa (sigillatura perenne con sealant), manutenzione difficile dei componenti interni.</p>
+      <div class="info-grid">
+        <div class="info-cell"><div class="cell-val" style="color:#00e5a0">~0</div><div class="cell-label">peso contenitore</div></div>
+        <div class="info-cell"><div class="cell-val" style="color:#00e5a0">MAX</div><div class="cell-label">volume utilizz.</div></div>
+      </div>
+
+      <h3>2 — Serbatoi Flessibili</h3>
+      <p>Realizzati in <strong>materiale sintetico elastomerico</strong> (gomma o tessuto gommato), chimicamente resistente al carburante. Vengono calati nel vano strutturale e fissati tramite punti di attacco.</p>
+      <p>✔ <strong>Vantaggi:</strong> non interferiscono con la rigidità strutturale, sostituibili, usati su elicotteri (es. Agusta A109: sotto la panchetta passeggeri posteriori).</p>
+      <p>✘ <strong>Svantaggi:</strong> possibili problemi di usura, montaggio complesso dei componenti interni.</p>
+
+      <h3>3 — Serbatoi Rigidi</h3>
+      <p>Componenti <strong>isolati e indipendenti dalla struttura</strong>, installati nella fusoliera. Interferiscono con la struttura solo tramite gli attacchi.</p>
+      <p>✔ <strong>Vantaggi:</strong> sostituibili, accessibili, indipendenza strutturale completa.</p>
+      <p>✘ <strong>Svantaggi:</strong> peso superiore, montaggio complesso, eventuale interferenza con la rigidità fusoliera.</p>
+
+      <h3>Componenti Obbligatori di Ogni Serbatoio</h3>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg" font-family="Barlow, sans-serif">
+          <!-- Serbatoio principale -->
+          <rect x="120" y="60" width="440" height="140" rx="12" fill="#0d1525" stroke="#00e5a0" stroke-width="1.5"/>
+          <!-- Paratie anti-sbattimento -->
+          <line x1="230" y1="60" x2="230" y2="200" stroke="#38bdf8" stroke-width="1" stroke-dasharray="5,3"/>
+          <line x1="340" y1="60" x2="340" y2="200" stroke="#38bdf8" stroke-width="1" stroke-dasharray="5,3"/>
+          <line x1="450" y1="60" x2="450" y2="200" stroke="#38bdf8" stroke-width="1" stroke-dasharray="5,3"/>
+          <text x="190" y="88" text-anchor="middle" fill="#38bdf8" font-size="9">Paratia</text>
+          <!-- Carburante -->
+          <rect x="122" y="135" width="436" height="63" rx="0" fill="#00e5a018"/>
+          <!-- Livello combustibile wavy -->
+          <path d="M122 135 Q175 128 230 135 Q285 142 340 135 Q395 128 450 135 Q505 142 558 135 L558 200 L122 200 Z" fill="#00e5a025"/>
+          <!-- Pozzetto raccolta -->
+          <rect x="300" y="162" width="80" height="36" rx="6" fill="#0d1525" stroke="#ffd600" stroke-width="1.5"/>
+          <text x="340" y="182" text-anchor="middle" fill="#ffd600" font-size="9.5" font-weight="600">POZZETTO</text>
+          <!-- Bocchettone rifornimento -->
+          <rect x="160" y="40" width="90" height="22" rx="5" fill="#1e3056" stroke="#ff6b1a" stroke-width="1"/>
+          <line x1="205" y1="62" x2="205" y2="85" stroke="#ff6b1a" stroke-dasharray="3,2"/>
+          <text x="205" y="36" text-anchor="middle" fill="#ff6b1a" font-size="9">Bocchettone</text>
+          <!-- Sfiato -->
+          <rect x="470" y="40" width="60" height="22" rx="5" fill="#1e3056" stroke="#c084fc" stroke-width="1"/>
+          <line x1="500" y1="62" x2="500" y2="78" stroke="#c084fc" stroke-dasharray="3,2"/>
+          <text x="500" y="36" text-anchor="middle" fill="#c084fc" font-size="9">Sfiato</text>
+          <!-- Pompa -->
+          <circle cx="350" cy="212" r="14" fill="#1e3056" stroke="#00c2ff" stroke-width="1.5"/>
+          <text x="350" y="216" text-anchor="middle" fill="#00c2ff" font-size="9">P</text>
+          <line x1="350" y1="198" x2="350" y2="226" stroke="#00c2ff" stroke-width="1"/>
+          <!-- Label -->
+          <text x="340" y="250" text-anchor="middle" fill="#3a5070" font-size="10" letter-spacing="1">SCHEMA INTERNO SERBATOIO</text>
+        </svg>
+        <div class="diagram-caption">FIG. 7.X · Componenti interni serbatoio aeronautico</div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Agusta A109</div>
+        <p>L'Agusta A109 utilizza serbatoi flessibili posizionati sotto la panchetta dei passeggeri posteriori, sviluppandosi in altezza dietro alla paratia dell'abitacolo. Questa soluzione, tipica degli elicotteri, sfrutta spazi altrimenti inutilizzabili e consente la sostituzione rapida senza interventi strutturali.</p>
+      </div>
+    `
+  },
+
+  m5: {
+    eyebrow: '§ 05 · Operazioni a Terra',
+    title: 'RIFORNIMENTO',
+    accent: '#c084fc',
+    body: `
+      <h3>Modalità di Rifornimento</h3>
+      <p>Il rifornimento dei serbatoi avviene attraverso <strong>bocchettoni</strong> dotati di filtro grossolano. Esistono due modalità principali:</p>
+      <p><strong>1. Per gravità (top-up):</strong> bocchettoni nella parte superiore del serbatoio. Metodo più semplice, usato su impianti base e come backup. Lento ma affidabile.</p>
+      <p><strong>2. Pressurizzato (underwing):</strong> il carburante è inviato in pressione attraverso un <em>pannello di rifornimento centralizzato</em>, accessibile da terra, che comanda il riempimento di tutti i serbatoi. Più rapido e sicuro per i velivoli di linea.</p>
+      <div class="formula-box">
+        <div class="formula-label">Tempo rifornimento pressurizzato (stima)</div>
+        t = V_totale / Q_pompa_rifornimento<br><br>
+        Es. Boeing 737-800: V = 26,020 L, Q = ~1,600 L/min → t ≈ 16 min<br>
+        (con pannello centralizzato, 2 punti underwing)
+      </div>
+
+      <h3>Sicurezza Elettrostatica</h3>
+      <p>Durante il rifornimento il carburante in movimento genera <strong>cariche elettrostatiche</strong>. Per prevenire archi elettrici e incendi è obbligatorio il <strong>bonding elettrico</strong>: un collegamento conduttivo tra l'autobotte e il velivolo, equalizzando i potenziali.</p>
+      <div class="example-box">
+        <div class="example-label">✦ Procedure Obbligatorie</div>
+        <p>1. Posizionare l'autobotte a monte del vento · 2. Inserire il cavo di bonding PRIMA di aprire qualsiasi valvola · 3. Verificare assenza di passeggeri vicini ai punti rifornimento · 4. Rimuovere bonding SOLO dopo chiusura bocchettoni.</p>
+      </div>
+
+      <h3>Volume di Espansione</h3>
+      <p>I bocchettoni devono essere installati in modo da rendere <strong>impossibile il riempimento completo</strong>. Occorre lasciare un volume libero (tipicamente 1–2%) per compensare la <strong>dilatazione termica</strong> del carburante al variare della temperatura.</p>
+      <div class="formula-box">
+        <div class="formula-label">Dilatazione termica Jet A-1</div>
+        ΔV = V₀ × β × ΔT<br>
+        β ≈ 0.00099 / °C  (coefficiente di esp. volumica)<br><br>
+        Es. 10,000 L con ΔT = 40°C → ΔV ≈ 396 L<br>
+        → Volume di espansione richiesto ≥ 400 L
+      </div>
+
+      <h3>Rifornimento in Volo</h3>
+      <p>Molti velivoli militari hanno la possibilità di <strong>rifornimento in volo (AAR)</strong> attraverso una sonda fissa (probe) o estraibile. Questa capacità estende l'autonomia in modo illimitato, richiedendo però coordinamento con un aereo cisterna (tanker).</p>
+
+      <h3>Scarico Rapido d'Emergenza</h3>
+      <p>I velivoli con <strong>MLW &lt; MTOW</strong> (es. Boeing 777: MTOW 352 t, MLW 260 t) non possono atterrare a pieno carico. In caso di emergenza subito dopo il decollo, il sistema di <em>fuel jettison</em> scarica rapidamente carburante in aria, raggiungendo il peso accettabile per l'atterraggio in ~10–15 minuti.</p>
+    `
+  },
+
+  m6: {
+    eyebrow: '§ 06 · Componenti Strutturali',
+    title: 'ARCHITETTURA INTERNA SERBATOI',
+    accent: '#38bdf8',
+    body: `
+      <h3>Paratie Anti-Sbattimento (Baffles)</h3>
+      <p>Nei serbatoi di grandi dimensioni, specialmente alari, le <strong>paratie anti-sbattimento</strong> (baffles) smorzano le oscillazioni del carburante indotte dai movimenti del velivolo (manovre, turbolenza). Senza di esse, il moto libero del liquido altererebbe il CG e potrebbe causare vuoti temporanei nell'alimentazione ai motori.</p>
+      <p>Nei serbatoi integrali alari, le centine strutturali svolgono già parzialmente questa funzione. I fori di alleggerimento nelle centine sono dotati di <strong>valvole di non-ritorno a flabello</strong> che permettono il passaggio del carburante in un solo verso, raccogliendo il combustibile verso la mezzeria.</p>
+
+      <h3>Pozzetto di Raccolta</h3>
+      <p>Nella parte inferiore del serbatoio è ricavato un <strong>pozzetto di raccolta</strong>, da cui partono le tubazioni di mandata verso i motori. La presa è progettata per non pescare direttamente dal fondo, raccogliendo invece nel pozzetto:</p>
+      <p>• Impurità solide in sospensione · • Acqua condensata (più densa del carburante, si deposita sul fondo)</p>
+      <p>Nella parte più bassa del pozzetto si trovano le <strong>prese di drenaggio</strong> per la rimozione dell'acqua e dei sedimenti durante le ispezioni pre-volo.</p>
+
+      <h3>Funzionamento in Volo Rovescio</h3>
+      <p>Nei velivoli acrobatici con motore a reazione, il pozzetto deve avere la capacità di <strong>chiudersi in volo rovescio</strong>, costituendo una piccola riserva di carburante che garantisce l'alimentazione del motore durante tutta la manovra rovesciata.</p>
+
+      <h3>Pressurizzazione e Sfiati</h3>
+      <p>I serbatoi devono essere dotati di <strong>sfiati</strong> che assicurano la ventilazione durante l'impiego e lo sfogo dell'aria durante il rifornimento.</p>
+      <p>Alcuni impianti <strong>pressurizzano</strong> i serbatoi con aria dal sistema pneumatico, limitando le perdite per vaporizzazione alle alte quote dove la pressione esterna è bassa.</p>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" font-family="Barlow, sans-serif">
+          <!-- Tank body -->
+          <rect x="80" y="50" width="520" height="180" rx="10" fill="#0d1525" stroke="#38bdf8" stroke-width="1.5"/>
+          <!-- Carburante -->
+          <rect x="82" y="140" width="516" height="88" rx="0" fill="#38bdf825"/>
+          <!-- Paratie anti-sbattimento con valvole -->
+          <line x1="220" y1="50" x2="220" y2="230" stroke="#38bdf8" stroke-width="1.5"/>
+          <circle cx="220" cy="145" r="7" fill="#38bdf8" opacity="0.5"/>
+          <text x="220" y="255" text-anchor="middle" fill="#38bdf8" font-size="9">Paratia 1</text>
+          <line x1="370" y1="50" x2="370" y2="230" stroke="#38bdf8" stroke-width="1.5"/>
+          <circle cx="370" cy="160" r="7" fill="#38bdf8" opacity="0.5"/>
+          <text x="370" y="255" text-anchor="middle" fill="#38bdf8" font-size="9">Paratia 2</text>
+          <line x1="520" y1="50" x2="520" y2="230" stroke="#38bdf8" stroke-width="1.5"/>
+          <circle cx="520" cy="152" r="7" fill="#38bdf8" opacity="0.5"/>
+          <text x="520" y="255" text-anchor="middle" fill="#38bdf8" font-size="9">Paratia 3</text>
+          <!-- Pozzetto -->
+          <rect x="275" y="185" width="120" height="43" rx="5" fill="#080d18" stroke="#ffd600" stroke-width="1.5"/>
+          <text x="335" y="208" text-anchor="middle" fill="#ffd600" font-size="10" font-weight="700">POZZETTO</text>
+          <!-- Pompa ausiliaria -->
+          <circle cx="335" cy="246" r="16" fill="#1e3056" stroke="#00c2ff" stroke-width="1.5"/>
+          <text x="335" y="250" text-anchor="middle" fill="#00c2ff" font-size="10" font-weight="700">P</text>
+          <line x1="335" y1="228" x2="335" y2="230" stroke="#00c2ff" stroke-width="1.5"/>
+          <!-- Sfiato -->
+          <rect x="100" y="30" width="60" height="22" rx="4" fill="#1e3056" stroke="#c084fc" stroke-width="1"/>
+          <line x1="130" y1="52" x2="130" y2="68" stroke="#c084fc" stroke-dasharray="3,2"/>
+          <text x="130" y="26" text-anchor="middle" fill="#c084fc" font-size="9">Sfiato</text>
+          <!-- Valvola flabello label -->
+          <text x="220" y="140" text-anchor="middle" fill="#3a5070" font-size="8">V.N.R.</text>
+          <text x="370" y="155" text-anchor="middle" fill="#3a5070" font-size="8">V.N.R.</text>
+          <!-- Drenaggio -->
+          <rect x="300" y="230" width="70" height="16" rx="3" fill="#1e3056" stroke="#ff6b1a" stroke-width="1"/>
+          <!-- label -->
+          <text x="340" y="15" text-anchor="middle" fill="#3a5070" font-size="10" letter-spacing="1">ARCHITETTURA INTERNA SERBATOIO ALARE</text>
+        </svg>
+        <div class="diagram-caption">FIG. 7.X · Paratie anti-sbattimento, pozzetto e valvole di non-ritorno</div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Pressurizzazione alle alte quote</div>
+        <p>A 12,000 m di quota, la pressione atmosferica è ~193 hPa (vs 1013 hPa al suolo). Senza pressurizzazione, la tensione di vapore del Jet A-1 (flash point ≈ 38°C) causerebbe vaporizzazione significativa. Il sistema pneumatico mantiene una pressione interna ai serbatoi di ~300 hPa, limitando le perdite di carburante per evaporazione e garantendo la pressione di aspirazione per le pompe di alimentazione.</p>
+      </div>
+    `
+  },
+
+  m7: {
+    eyebrow: '§ 07 · Strumentazione',
+    title: 'MISURA DEL COMBUSTIBILE',
+    accent: '#fb923c',
+    body: `
+      <h3>Principio Generale</h3>
+      <p>Nei serbatoi sono installate sonde per la <strong>misura del livello di combustibile</strong>. Il dato rilevante per il pilota non è il livello ma la <strong>quantità in massa</strong> [kg], che determina l'autonomia e il peso per la pianificazione del volo.</p>
+
+      <h3>Sonda a Galleggiante</h3>
+      <p>Il tipo più semplice: un galleggiante è collegato tramite un'asta a un <strong>potenziometro angolare</strong>. L'inclinazione dell'asta misura il livello di combustibile. Il segnale in tensione è proporzionale alla posizione del galleggiante.</p>
+      <p>✘ Limitazioni: sensibile al moto del velivolo, misura puntuale (non volumetrica), impreciso per serbatoi dalla geometria complessa.</p>
+
+      <h3>Sonda Capacitiva</h3>
+      <p>Tecnologia più sofisticata: la sonda è formata da <strong>due cilindri coassiali</strong> che costituiscono le armature di un condensatore. La capacità dipende dal dielettrico tra le armature: aria (ε ≈ 1) o carburante (ε ≈ 2).</p>
+      <div class="formula-box">
+        <div class="formula-label">Capacità di un condensatore cilindrico</div>
+        C = 2πε₀εᵣL / ln(r₂/r₁)<br><br>
+        Con carburante parziale (livello h):<br>
+        C_tot = C_carb(h) + C_aria(L-h)<br>
+        C_tot = (2πε₀L / ln(r₂/r₁)) × [εᵣ_carb × (h/L) + 1 × (1-h/L)]<br><br>
+        La variazione di C_tot è linearmente proporzionale a h
+      </div>
+      <p>La capacità viene letta da un circuito elettronico e convertita in segnale di livello. Vantaggi: nessuna parte mobile, alta precisione, possibile costruire sonde che danno direttamente la misura del volume (armature a profilo variabile).</p>
+
+      <h3>Sonde Ultrasoniche (Boeing 777)</h3>
+      <p>Il Boeing 777 utilizza sonde ultrasoniche che misurano il livello tramite un segnale riflesso dal <strong>pelo libero</strong> del carburante. Massima affidabilità, nessuna parte mobile, funzionamento anche con carburante contaminato.</p>
+
+      <h3>Il Problema Livello → Massa</h3>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grafico Livello-Volume non lineare -->
+          <text x="340" y="20" text-anchor="middle" fill="#3a5070" font-size="10" letter-spacing="1">CORRELAZIONE LIVELLO → VOLUME (Serbatoio Alare)</text>
+          <!-- Assi -->
+          <line x1="80" y1="190" x2="620" y2="190" stroke="#3a5070" stroke-width="1"/>
+          <line x1="80" y1="190" x2="80" y2="40" stroke="#3a5070" stroke-width="1"/>
+          <text x="350" y="210" text-anchor="middle" fill="#6b8ab0" font-size="9">LIVELLO [h/H]</text>
+          <text x="30" y="120" text-anchor="middle" fill="#6b8ab0" font-size="9" transform="rotate(-90, 30, 120)">VOLUME [V/Vmax]</text>
+          <!-- Linea ideale (lineare) -->
+          <line x1="80" y1="190" x2="620" y2="40" stroke="#3a5070" stroke-width="1" stroke-dasharray="5,3" opacity="0.4"/>
+          <text x="640" y="42" fill="#3a5070" font-size="8">lineare</text>
+          <!-- Curva reale serbatoio alare -->
+          <path d="M80 190 C150 185 200 175 260 155 S360 110 420 80 S540 50 620 40" fill="none" stroke="#fb923c" stroke-width="2.5"/>
+          <text x="640" y="42" fill="#fb923c" font-size="8"></text>
+          <!-- Label curva -->
+          <text x="430" y="74" fill="#fb923c" font-size="9">curva reale</text>
+          <!-- Tick assi -->
+          <text x="80" y="205" text-anchor="middle" fill="#3a5070" font-size="8">0</text>
+          <text x="350" y="205" text-anchor="middle" fill="#3a5070" font-size="8">0.5</text>
+          <text x="620" y="205" text-anchor="middle" fill="#3a5070" font-size="8">1.0</text>
+          <text x="72" y="190" text-anchor="end" fill="#3a5070" font-size="8">0</text>
+          <text x="72" y="115" text-anchor="end" fill="#3a5070" font-size="8">0.5</text>
+          <text x="72" y="43" text-anchor="end" fill="#3a5070" font-size="8">1</text>
+        </svg>
+        <div class="diagram-caption">FIG. 7.4 · Correlazione non-lineare livello-volume in serbatoio alare</div>
+      </div>
+
+      <p>Per calcolare la <strong>massa</strong> dal volume occorre conoscere anche la <strong>densità del carburante</strong>, che varia con la temperatura:</p>
+      <div class="formula-box">
+        <div class="formula-label">Calcolo massa carburante</div>
+        m = V × ρ(T)<br>
+        ρ(T) = ρ₀ × [1 - β(T - T₀)]<br><br>
+        Jet A-1: ρ₀ = 800 kg/m³ @ 15°C, β ≈ 0.00099 /°C<br>
+        Es. a −30°C: ρ ≈ 800 × [1 - 0.00099 × (−45)] ≈ 836 kg/m³
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Gimli Glider (Air Canada 143, 1983)</div>
+        <p>Un Boeing 767 rimase senza carburante in volo a causa di un errore nella conversione kg/L. Il personale di terra calcolò il carburante in libbre invece che in kg, caricando solo metà del combustibile necessario. Morale: la misura della massa del carburante, non solo del volume, è critica per la sicurezza del volo.</p>
+      </div>
+    `
+  },
+
+  m8: {
+    eyebrow: '§ 08 · Impianto di Bordo',
+    title: 'RETE DI DISTRIBUZIONE',
+    accent: '#f472b6',
+    body: `
+      <h3>Architettura Base (Monomotore)</h3>
+      <p>L'impianto più semplice si trova nei monomotori a carburatore con portate modeste. Se il serbatoio è posizionato più in alto del carburatore, è possibile sfruttare la <strong>gravità</strong>. L'impianto comprende: serbatoio → valvola di esclusione → filtro → presa di spurgo → carburatore.</p>
+
+      <h3>Architettura Plurimotore con Crossfeed</h3>
+      <p>Nei velivoli plurimotori è fondamentale poter alimentare <strong>qualsiasi motore con il carburante di qualsiasi serbatoio</strong>. Questo è necessario per:</p>
+      <p>• Bilanciare il velivolo in caso di piantata motore (evitare squilibrio laterale)</p>
+      <p>• Non sprecare carburante nei serbatoi dell'ala con motore spento</p>
+      <p>• Alimentare tutti i motori da un serbatoio pieno mentre si svuota l'altro (serbatoi principali)</p>
+
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+          <!-- Serbatoio 1 (sx) -->
+          <rect x="40" y="80" width="120" height="60" rx="8" fill="#1e3056" stroke="#f472b6" stroke-width="1.5"/>
+          <text x="100" y="107" text-anchor="middle" fill="#f472b6" font-size="11" font-weight="600">SERBATOIO 1</text>
+          <text x="100" y="124" text-anchor="middle" fill="#6b8ab0" font-size="9">(principale sx)</text>
+          <!-- Pompa 1 -->
+          <circle cx="210" cy="110" r="18" fill="#111e35" stroke="#f472b6" stroke-width="1.5"/>
+          <text x="210" y="114" text-anchor="middle" fill="#f472b6" font-size="11" font-weight="700">P₁</text>
+          <line x1="160" y1="110" x2="192" y2="110" stroke="#f472b6" stroke-width="2"/>
+          <!-- Serbatoio 2 (dx) -->
+          <rect x="40" y="200" width="120" height="60" rx="8" fill="#1e3056" stroke="#f472b6" stroke-width="1.5"/>
+          <text x="100" y="227" text-anchor="middle" fill="#f472b6" font-size="11" font-weight="600">SERBATOIO 2</text>
+          <text x="100" y="244" text-anchor="middle" fill="#6b8ab0" font-size="9">(principale dx)</text>
+          <!-- Pompa 2 -->
+          <circle cx="210" cy="230" r="18" fill="#111e35" stroke="#f472b6" stroke-width="1.5"/>
+          <text x="210" y="234" text-anchor="middle" fill="#f472b6" font-size="11" font-weight="700">P₂</text>
+          <line x1="160" y1="230" x2="192" y2="230" stroke="#f472b6" stroke-width="2"/>
+          <!-- Linee principali -->
+          <line x1="228" y1="110" x2="340" y2="110" stroke="#f472b6" stroke-width="2"/>
+          <line x1="228" y1="230" x2="340" y2="230" stroke="#f472b6" stroke-width="2"/>
+          <!-- Crossfeed valve -->
+          <line x1="340" y1="110" x2="340" y2="190" stroke="#ffd600" stroke-width="2"/>
+          <polygon points="325,170 355,170 340,190" fill="#ffd600" opacity="0.8"/>
+          <rect x="310" y="155" width="60" height="18" rx="3" fill="#1e3056" stroke="#ffd600" stroke-width="1"/>
+          <text x="340" y="168" text-anchor="middle" fill="#ffd600" font-size="9">CROSSFEED</text>
+          <line x1="340" y1="192" x2="340" y2="230" stroke="#ffd600" stroke-width="2"/>
+          <!-- Linee verso motori -->
+          <line x1="340" y1="110" x2="560" y2="110" stroke="#f472b6" stroke-width="2"/>
+          <line x1="340" y1="230" x2="560" y2="230" stroke="#f472b6" stroke-width="2"/>
+          <!-- Motore 1 -->
+          <rect x="560" y="83" width="100" height="54" rx="8" fill="#1e3056" stroke="#00c2ff" stroke-width="1.5"/>
+          <text x="610" y="107" text-anchor="middle" fill="#00c2ff" font-size="11" font-weight="600">MOTORE 1</text>
+          <text x="610" y="124" text-anchor="middle" fill="#6b8ab0" font-size="9">(sx)</text>
+          <!-- Motore 2 -->
+          <rect x="560" y="203" width="100" height="54" rx="8" fill="#1e3056" stroke="#00c2ff" stroke-width="1.5"/>
+          <text x="610" y="227" text-anchor="middle" fill="#00c2ff" font-size="11" font-weight="600">MOTORE 2</text>
+          <text x="610" y="244" text-anchor="middle" fill="#6b8ab0" font-size="9">(dx)</text>
+          <!-- Label normale -->
+          <text x="340" y="40" text-anchor="middle" fill="#3a5070" font-size="10" letter-spacing="1">SCHEMA CROSSFEED BIMOTORE</text>
+          <!-- Normal flow label -->
+          <text x="450" y="100" fill="#f472b6" font-size="8">Feed normale</text>
+          <text x="450" y="220" fill="#f472b6" font-size="8">Feed normale</text>
+        </svg>
+        <div class="diagram-caption">FIG. 7.6 · Schema alimentazione incrociata (crossfeed)</div>
+      </div>
+
+      <h3>Requisiti Pressione alle Pompe</h3>
+      <p>Nei velivoli con turboreattori, le portate sono molto elevate e le perdite di carico nei condotti sono significative. Le pompe devono garantire in tutto l'intervallo di portata Q<sub>MIN</sub>–Q<sub>MAX</sub> una pressione sufficiente:</p>
+      <div class="formula-box">
+        <div class="formula-label">Condizione di funzionamento pompa (§ 7.8)</div>
+        Per Q_MIN ≤ Q ≤ Q_MAX deve essere:<br>
+        p_MIN + Δp(Q) ≤ p_P ≤ p_MAX + Δp(Q)<br><br>
+        dove Δp(Q) ∝ Q² sono le perdite di carico nei condotti<br>
+        p_P = pressione erogata dalla pompa<br>
+        p_MIN, p_MAX = range di pressione richiesto all'ingresso del motore
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Avaria motore B737</div>
+        <p>Se il motore sinistro si ferma, il sistema crossfeed del B737 consente di alimentarlo dal serbatoio destro o di alimentare entrambi i motori dal serbatoio destro rimanente. In caso contrario, il serbatoio sinistro rimarrebbe pieno, squilibrando il velivolo di oltre 1,000 kg lateralmente.</p>
+      </div>
+    `
+  },
+
+  m9: {
+    eyebrow: '§ 09 · Progetto',
+    title: 'CALCOLO DELL\'IMPIANTO',
+    accent: '#a3e635',
+    body: `
+      <h3>Tipo di Pompe</h3>
+      <p>Le <strong>pompe di alimentazione</strong> impiegate negli impianti combustibile sono pompe <strong>fluidodinamiche di tipo centrifugo</strong>. Esse hanno il compito di prelevare il combustibile dai serbatoi primari e inviarlo ai motori, garantendo la continuità di flusso entro un certo intervallo di pressione e portata.</p>
+      <p>Poiché possono essere in cavitazione se la pressione di aspirazione è troppo bassa, vengono installate il più a monte possibile nell'impianto, spesso <strong>immerse direttamente nei serbatoi</strong> (elettropompe centrifughe sommerse).</p>
+
+      <h3>Diagramma di Funzionamento</h3>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 660 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+          <!-- Assi -->
+          <line x1="80" y1="260" x2="600" y2="260" stroke="#6b8ab0" stroke-width="1.5"/>
+          <line x1="80" y1="260" x2="80" y2="50" stroke="#6b8ab0" stroke-width="1.5"/>
+          <!-- Label assi -->
+          <text x="340" y="290" text-anchor="middle" fill="#6b8ab0" font-size="11" letter-spacing="1">PORTATA Q</text>
+          <text x="22" y="165" text-anchor="middle" fill="#6b8ab0" font-size="11" letter-spacing="1" transform="rotate(-90,22,165)">PRESSIONE p</text>
+          <!-- Q_MIN, Q_MAX linee verticali -->
+          <line x1="200" y1="55" x2="200" y2="260" stroke="#3a5070" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="480" y1="55" x2="480" y2="260" stroke="#3a5070" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="200" y="48" text-anchor="middle" fill="#6b8ab0" font-size="10">Q_MIN</text>
+          <text x="480" y="48" text-anchor="middle" fill="#6b8ab0" font-size="10">Q_MAX</text>
+          <!-- P_MAX linea (curva superiore = p_MAX + Δp) -->
+          <path d="M80 95 Q200 90 340 105 Q430 118 600 155" fill="none" stroke="#a3e635" stroke-width="2" stroke-dasharray="6,3"/>
+          <text x="615" y="158" fill="#a3e635" font-size="9">p_MAX+Δp</text>
+          <!-- P_MIN linea (curva inferiore = p_MIN + Δp) -->
+          <path d="M80 185 Q200 168 340 180 Q430 192 600 220" fill="none" stroke="#a3e635" stroke-width="2" stroke-dasharray="6,3"/>
+          <text x="615" y="223" fill="#a3e635" font-size="9">p_MIN+Δp</text>
+          <!-- Zona ammessa (fill) -->
+          <path d="M80 95 Q200 90 340 105 Q430 118 600 155 L600 220 Q430 192 340 180 Q200 168 80 185 Z" fill="#a3e63510"/>
+          <!-- Curva pompa -->
+          <path d="M80 135 Q150 130 220 125 Q300 120 380 130 Q450 142 520 175 Q560 200 600 240" fill="none" stroke="#00c2ff" stroke-width="2.5"/>
+          <text x="480" y="200" fill="#00c2ff" font-size="11" font-weight="700">POMPA</text>
+          <!-- Intervallo operativo evidenziato -->
+          <rect x="200" y="108" width="280" height="115" rx="4" fill="none" stroke="#a3e635" stroke-width="1" opacity="0.4"/>
+          <text x="340" y="150" text-anchor="middle" fill="#a3e635" font-size="9" opacity="0.6">Zona operativa</text>
+          <!-- Frecce -->
+          <text x="340" y="310" text-anchor="middle" fill="#3a5070" font-size="10" letter-spacing="1">FIG. 7.5 · DIAGRAMMA POMPA COMBUSTIBILE</text>
+        </svg>
+        <div class="diagram-caption">La curva della pompa deve rimanere entro il corridoio [p_MIN+Δp, p_MAX+Δp] per ogni Q ∈ [Q_MIN, Q_MAX]</div>
+      </div>
+
+      <h3>Formula di Progetto</h3>
+      <div class="formula-box">
+        <div class="formula-label">Condizione necessaria e sufficiente per la pompa</div>
+        ∀ Q ∈ [Q_MIN, Q_MAX]:<br>
+        p_MIN + Δp(Q) ≤ p_P(Q) ≤ p_MAX + Δp(Q)<br><br>
+        dove:<br>
+        Δp(Q) = perdite di carico distribuite e concentrate<br>
+              ≈ k × Q²  (regime turbolento)<br>
+        p_P(Q) = caratteristica della pompa centrifuga<br>
+        p_P(Q) = H₀ - a×Q - b×Q²  (per pompa centrifuga)<br><br>
+        Condizione di cavitazione da evitare:<br>
+        p_aspirazione > p_vapore(T)  in ogni condizione di volo
+      </div>
+
+      <h3>Ridondanza: Serie e Parallelo</h3>
+      <p>Per ogni serbatoio primario ci sono generalmente <strong>più pompe</strong> che lavorano in parallelo o in serie. Questo garantisce:</p>
+      <p>• Continuità di alimentazione in caso di avaria di una pompa</p>
+      <p>• Possibilità di alimentare i motori degli altri serbatoi in modalità crossfeed</p>
+      <p>Le pompe sono dimensionate per far fronte all'avaria di quelle degli altri serbatoi primari.</p>
+      <div class="info-grid">
+        <div class="info-cell"><div class="cell-val" style="color:#a3e635">2–4</div><div class="cell-label">pompe / serbatoio primario (liner)</div></div>
+        <div class="info-cell"><div class="cell-val" style="color:#a3e635">Q²</div><div class="cell-label">legge perdite di carico</div></div>
+        <div class="info-cell"><div class="cell-val" style="color:#a3e635">≤0</div><div class="cell-label">bar suction margin cavit.</div></div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">✦ Esempio Pratico — Boeing 777 Fuel System</div>
+        <p>Il B777 ha 3 serbatoi (2 alari + 1 centrale), ciascuno con 2 pompe centrifughe sommerse da ~690 L/min ciascuna, a ~4.8 bar di pressione di uscita. Le pompe dell'ala sx possono alimentare anche il motore dx in crossfeed. Il sistema di scambio carburante (fuel balance) è automatico, mantenendo lo squilibrio tra le ali entro 453 kg.</p>
+      </div>
+    `
+  }
+
+  ,
+
+  m10: {
+    eyebrow: '§ 10 · Eurofighter Typhoon',
+    title: 'SISTEMA CARBURANTE EFA',
+    accent: '#e879f9',
+    body: `
+      <h3>Panoramica del Sistema</h3>
+      <p>Il sistema carburante dell'<strong>Eurofighter Typhoon (EFA)</strong> è progettato per alimentare i due motori EJ200 in tutte le condizioni di volo, incluso il volo rovescio, garantendo al contempo il controllo automatico del centro di gravità (CG).</p>
+      <p>Il sistema è controllato da <strong>due fuel computers ridondanti</strong> che gestiscono in modo autonomo trasferimento, rifornimento/defornimento, bilanciamento e avvisi. L'interfaccia pilota è il <strong>MHDD/FUEL format</strong>.</p>
+
+      <h3>Architettura dei Serbatoi</h3>
+      <table class="fuel-table">
+        <thead><tr><th>Gruppo/Tank</th><th>Posizione</th><th>Tipo</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Fuselage Front Group</td><td>Fusoliera anteriore</td><td>7 celle integrate</td><td>Alimenta motore SX. Collector tank con boost pumps.</td></tr>
+          <tr><td>Fuselage Rear Group</td><td>Fusoliera posteriore</td><td>7 celle integrate</td><td>Alimenta motore DX. Collector tank con boost pumps.</td></tr>
+          <tr><td>Front Transfer Tank</td><td>Fusoliera (davanti FWD group)</td><td>Trasferimento</td><td>Separato dai due gruppi. 2 pompe di trasferimento.</td></tr>
+          <tr><td>Wing Front/Rear Tank (x4)</td><td>Ali (2 per ala)</td><td>Alare diviso FWD/AFT</td><td>Riduce sloshing CG. 2 pompe ciascuno.</td></tr>
+          <tr><td>Underwing External (x2)</td><td>Sotto le ali</td><td>Esterno jettisonabile</td><td>1000 L ciascuno. Trasferimento ad aria pressurizzata.</td></tr>
+          <tr><td>Underfuselage External</td><td>Sotto la fusoliera</td><td>Esterno jettisonabile</td><td>1000 L. Stazione centerline.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Display MHDD/FUEL</h3>
+      <p>Lo stato del sistema è visualizzato sul <strong>MHDD (Multi-Function Head-Down Display)</strong> in formato FUEL. Il display mostra in tempo reale: quantità per serbatoio in kg, stato delle pompe, anomalie di pressione, posizione CG e avvisi XFER/LOW PRES.</p>
+      <div class="diagram-wrap">
+        <div class="mhdd-screen">
+          <svg viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+            <!-- Background MHDD -->
+            <rect width="520" height="320" fill="#000"/>
+            <!-- Title -->
+            <text x="260" y="20" text-anchor="middle" fill="#00ff50" font-size="13" font-weight="700" letter-spacing="3">FUEL   5170 KG</text>
+            <!-- Front Transfer Tank (top center) -->
+            <rect x="205" y="32" width="110" height="42" fill="#00f" stroke="#00aaff" stroke-width="1.5"/>
+            <text x="260" y="52" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">250</text>
+            <text x="260" y="66" text-anchor="middle" fill="#00aaff" font-size="9">FWD XFER</text>
+            <!-- RDY indicator -->
+            <rect x="335" y="36" width="36" height="16" fill="none" stroke="#00ff50" stroke-width="1"/>
+            <text x="353" y="48" text-anchor="middle" fill="#00ff50" font-size="9">RDY</text>
+            <!-- Fuselage Front Group (center-top) -->
+            <rect x="195" y="88" width="130" height="44" fill="#00f" stroke="#ffaa00" stroke-width="2"/>
+            <text x="260" y="108" text-anchor="middle" fill="#ffaa00" font-size="12" font-weight="700">290</text>
+            <text x="260" y="124" text-anchor="middle" fill="#888" font-size="9">FUSE FWD GRP</text>
+            <!-- Low pres indicator on group -->
+            <circle cx="200" cy="100" r="5" fill="red"/>
+            <!-- Fuselage Rear Group (center-bottom) -->
+            <rect x="195" y="188" width="130" height="50" fill="#00f" stroke="#00aaff" stroke-width="1.5"/>
+            <text x="260" y="210" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">850</text>
+            <text x="260" y="228" text-anchor="middle" fill="#888" font-size="9">FUSE REAR GRP</text>
+            <!-- XFEED label -->
+            <text x="260" y="246" text-anchor="middle" fill="#00ff50" font-size="10">XFEED</text>
+            <!-- Wing tanks LEFT -->
+            <path d="M50 130 L185 115 L185 145 L50 158 Z" fill="#00f" stroke="#00aaff" stroke-width="1"/>
+            <text x="120" y="148" text-anchor="middle" fill="#fff" font-size="11">490</text>
+            <rect x="50" y="175" width="130" height="36" fill="#00f" stroke="#00aaff" stroke-width="1"/>
+            <text x="115" y="197" text-anchor="middle" fill="#fff" font-size="11">420</text>
+            <!-- Wing tanks RIGHT -->
+            <path d="M470 130 L335 115 L335 145 L470 158 Z" fill="#00f" stroke="#00aaff" stroke-width="1"/>
+            <text x="400" y="148" text-anchor="middle" fill="#fff" font-size="11">490</text>
+            <rect x="340" y="175" width="130" height="36" fill="#00f" stroke="#00aaff" stroke-width="1"/>
+            <text x="405" y="197" text-anchor="middle" fill="#fff" font-size="11">420</text>
+            <!-- External tanks LEFT (small pill) -->
+            <rect x="22" y="120" width="22" height="80" rx="11" fill="#00f" stroke="#00aaff" stroke-width="1"/>
+            <text x="33" y="162" text-anchor="middle" fill="#fff" font-size="9" transform="rotate(-90,33,162)">600</text>
+            <!-- External tanks RIGHT -->
+            <rect x="476" y="120" width="22" height="80" rx="11" fill="#00f" stroke="#00aaff" stroke-width="1"/>
+            <text x="487" y="162" text-anchor="middle" fill="#fff" font-size="9" transform="rotate(-90,487,162)">600</text>
+            <!-- Center ext tank (underfuselage) -->
+            <rect x="225" y="248" width="70" height="22" rx="5" fill="#00f" stroke="#00aaff" stroke-width="1"/>
+            <text x="260" y="263" text-anchor="middle" fill="#fff" font-size="9">780</text>
+            <!-- Connecting lines -->
+            <line x1="260" y1="74" x2="260" y2="88" stroke="#00aaff" stroke-width="1.5"/>
+            <line x1="185" y1="130" x2="195" y2="110" stroke="#00aaff" stroke-width="1"/>
+            <line x1="335" y1="130" x2="325" y2="110" stroke="#00aaff" stroke-width="1"/>
+            <line x1="185" y1="193" x2="195" y2="200" stroke="#00aaff" stroke-width="1"/>
+            <line x1="335" y1="193" x2="325" y2="200" stroke="#00aaff" stroke-width="1"/>
+            <line x1="44" y1="160" x2="50" y2="148" stroke="#00aaff" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="476" y1="160" x2="470" y2="148" stroke="#00aaff" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="260" y1="238" x2="260" y2="248" stroke="#00aaff" stroke-width="1" stroke-dasharray="3,2"/>
+            <!-- Engine feed lines -->
+            <line x1="195" y1="215" x2="155" y2="290" stroke="#00ff50" stroke-width="2"/>
+            <rect x="115" y="285" width="80" height="22" rx="4" fill="#003300" stroke="#00ff50" stroke-width="1"/>
+            <text x="155" y="300" text-anchor="middle" fill="#00ff50" font-size="10">ENG L</text>
+            <line x1="325" y1="215" x2="365" y2="290" stroke="#00ff50" stroke-width="2"/>
+            <rect x="325" y="285" width="80" height="22" rx="4" fill="#003300" stroke="#00ff50" stroke-width="1"/>
+            <text x="365" y="300" text-anchor="middle" fill="#00ff50" font-size="10">ENG R</text>
+            <!-- LOW PRES warnings -->
+            <rect x="108" y="265" width="56" height="20" rx="3" fill="#ffaa00" opacity="0.85"/>
+            <text x="136" y="279" text-anchor="middle" fill="#000" font-size="9" font-weight="700">LOW PRES</text>
+            <rect x="356" y="265" width="56" height="20" rx="3" fill="#ffaa00" opacity="0.85"/>
+            <text x="384" y="279" text-anchor="middle" fill="#000" font-size="9" font-weight="700">LOW PRES</text>
+            <!-- CG REAR warning -->
+            <rect x="335" y="240" width="56" height="24" rx="3" fill="red"/>
+            <text x="363" y="251" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">CG</text>
+            <text x="363" y="261" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">REAR</text>
+          </svg>
+        </div>
+        <div class="diagram-caption">MHDD/FUEL FORMAT — Schermata di monitoraggio carburante EFA Typhoon</div>
+      </div>
+
+      <h3>Caratteristiche di Sicurezza</h3>
+      <p>• <strong>Probes suddivise tra i due fuel computers:</strong> se un computer fallisce, l'altro mantiene il controllo con accuratezza ridotta.</p>
+      <p>• <strong>Stesso principio per le pompe:</strong> ogni serbatoio ha pompe di backup collegate a computer diversi.</p>
+      <p>• <strong>Rifornimento in volo (AAR):</strong> il Typhoon è dotato di sonda fissa o estraibile per il rifornimento da tanker.</p>
+      <p>• <strong>Fuel recirculation:</strong> il sistema usa il carburante come heat sink per i sistemi idraulici, elettrici e gli accessori dei motori.</p>
+      <div class="example-box">
+        <div class="example-label">✦ Nota Operativa</div>
+        <p>I serbatoi esterni NON devono essere jettisonati a terra (CAUTION). In volo, i serbatoi underwing e underfuselage sono tutti jettisonabili per alleggerimento di emergenza o situazioni di combattimento.</p>
+      </div>
+    `
+  },
+
+  m11: {
+    eyebrow: '§ 11 · Simulazione Interattiva',
+    title: 'TRASFERIMENTO CARBURANTE',
+    accent: '#22d3ee',
+    body: `
+      <h3>Sistema di Trasferimento Automatico</h3>
+      <p>Il trasferimento carburante è <strong>completamente automatico</strong>, gestito dai fuel computers tramite segnali dalle sonde di livello. L'obiettivo è minimizzare il movimento del CG mantenendo i gruppi principali (fusoliera) sempre alimentati.</p>
+      <p>La sequenza di svuotamento è fissa: <strong>1) Serbatoi esterni underwing → 2) Serbatoio esterno underfuselage → 3) Front Transfer + Aft Wing tanks (Stage 1) → 4) Forward Wing tanks (Stage 2)</strong>.</p>
+
+      <div class="flow-container">
+        <div class="flow-controls">
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;">FASE:</span>
+          <button class="flow-btn active" id="btnNorm" onclick="setFlowMode('normal')">NORMALE</button>
+          <button class="flow-btn" id="btnExt" onclick="setFlowMode('external')">ESTERNI</button>
+          <button class="flow-btn" id="btnS1" onclick="setFlowMode('stage1')">STAGE 1</button>
+          <button class="flow-btn" id="btnS2" onclick="setFlowMode('stage2')">STAGE 2</button>
+          <button class="flow-btn" id="btnXfeed" onclick="setFlowMode('xfeed')">CROSSFEED</button>
+        </div>
+
+        <svg id="flowSvg" viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" style="width:100%;max-height:460px;">
+          <defs>
+            <marker id="arrowB" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#22d3ee"/></marker>
+            <marker id="arrowG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#00e5a0"/></marker>
+            <marker id="arrowO" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff6b1a"/></marker>
+            <marker id="arrowP" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e879f9"/></marker>
+          </defs>
+
+          <!-- ===== STATIC STRUCTURE ===== -->
+
+          <!-- FRONT TRANSFER TANK (top center) -->
+          <rect x="270" y="20" width="160" height="52" rx="6" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tFront"/>
+          <text x="350" y="42" text-anchor="middle" fill="#6b8ab0" font-size="10" font-weight="700">FRONT TRANSFER</text>
+          <text x="350" y="58" text-anchor="middle" fill="#6b8ab0" font-size="9">780 kg</text>
+
+          <!-- FUSELAGE FRONT GROUP -->
+          <rect x="255" y="110" width="190" height="60" rx="6" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tFuseFwd"/>
+          <text x="350" y="135" text-anchor="middle" fill="#6b8ab0" font-size="10" font-weight="700">FUSE FRONT GROUP</text>
+          <text x="350" y="153" text-anchor="middle" fill="#6b8ab0" font-size="9">collector · boost pumps</text>
+
+          <!-- FUSELAGE REAR GROUP -->
+          <rect x="255" y="280" width="190" height="60" rx="6" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tFuseRear"/>
+          <text x="350" y="305" text-anchor="middle" fill="#6b8ab0" font-size="10" font-weight="700">FUSE REAR GROUP</text>
+          <text x="350" y="323" text-anchor="middle" fill="#6b8ab0" font-size="9">collector · boost pumps</text>
+
+          <!-- WING L FRONT -->
+          <path d="M60 155 L245 138 L245 165 L60 182 Z" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tWLF"/>
+          <text x="152" y="172" text-anchor="middle" fill="#6b8ab0" font-size="9">L-WING FWD</text>
+
+          <!-- WING L REAR -->
+          <path d="M60 198 L245 185 L245 212 L60 228 Z" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tWLR"/>
+          <text x="152" y="214" text-anchor="middle" fill="#6b8ab0" font-size="9">L-WING AFT</text>
+
+          <!-- WING R FRONT -->
+          <path d="M640 155 L455 138 L455 165 L640 182 Z" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tWRF"/>
+          <text x="548" y="172" text-anchor="middle" fill="#6b8ab0" font-size="9">R-WING FWD</text>
+
+          <!-- WING R REAR -->
+          <path d="M640 198 L455 185 L455 212 L640 228 Z" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tWRR"/>
+          <text x="548" y="214" text-anchor="middle" fill="#6b8ab0" font-size="9">R-WING AFT</text>
+
+          <!-- EXT L (pill) -->
+          <rect x="18" y="148" width="26" height="88" rx="13" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tExtL"/>
+          <text x="31" y="182" text-anchor="middle" fill="#6b8ab0" font-size="8" transform="rotate(-90,31,182)">EXT-L</text>
+
+          <!-- EXT R (pill) -->
+          <rect x="656" y="148" width="26" height="88" rx="13" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tExtR"/>
+          <text x="669" y="182" text-anchor="middle" fill="#6b8ab0" font-size="8" transform="rotate(-90,669,182)">EXT-R</text>
+
+          <!-- EXT CENTER (underfuselage) -->
+          <rect x="280" y="370" width="140" height="40" rx="8" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="tExtC"/>
+          <text x="350" y="386" text-anchor="middle" fill="#6b8ab0" font-size="9">EXT UNDERFUSELAGE</text>
+          <text x="350" y="401" text-anchor="middle" fill="#6b8ab0" font-size="9">1000 L</text>
+
+          <!-- ENGINES -->
+          <rect x="230" y="450" width="90" height="34" rx="6" fill="#060c14" stroke="#00e5a0" stroke-width="1.5"/>
+          <text x="275" y="465" text-anchor="middle" fill="#00e5a0" font-size="10" font-weight="700">ENG L</text>
+          <text x="275" y="479" text-anchor="middle" fill="#3a5070" font-size="8">EJ200</text>
+          <rect x="380" y="450" width="90" height="34" rx="6" fill="#060c14" stroke="#00e5a0" stroke-width="1.5"/>
+          <text x="425" y="465" text-anchor="middle" fill="#00e5a0" font-size="10" font-weight="700">ENG R</text>
+          <text x="425" y="479" text-anchor="middle" fill="#3a5070" font-size="8">EJ200</text>
+
+          <!-- XFEED valve (center between groups) -->
+          <circle cx="350" cy="240" r="14" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5" id="xfeedValve"/>
+          <text x="350" y="244" text-anchor="middle" fill="#3a5070" font-size="9">XV</text>
+
+          <!-- ===== FLOW PATHS (shown/hidden by JS) ===== -->
+
+          <!-- Normal: Fuse groups → engines -->
+          <line id="f_fwd_engL" x1="280" y1="170" x2="260" y2="450" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrowB)" opacity="0" stroke-dasharray="8,4"/>
+          <line id="f_rear_engR" x1="420" y1="280" x2="440" y2="450" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrowB)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- External → Fuselage groups -->
+          <path id="f_extL_rear" d="M44 192 L255 310" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrowO)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="f_extR_fwd" d="M656 170 L445 140" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrowO)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="f_extC" d="M350 370 L350 340" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrowO)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- Stage 1: Front Transfer + Wing AFT → groups -->
+          <path id="f_frontXfer" d="M350 72 L350 110" fill="none" stroke="#e879f9" stroke-width="2.5" marker-end="url(#arrowP)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="f_wLR_fuse" d="M152 212 L280 295" fill="none" stroke="#e879f9" stroke-width="2.5" marker-end="url(#arrowP)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="f_wRR_fuse" d="M548 212 L420 295" fill="none" stroke="#e879f9" stroke-width="2.5" marker-end="url(#arrowP)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- Stage 2: Wing FWD → groups -->
+          <path id="f_wLF_fuse" d="M152 170 L280 135" fill="none" stroke="#ffd600" stroke-width="2.5" marker-end="url(#arrowB)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="f_wRF_fuse" d="M548 170 L420 135" fill="none" stroke="#ffd600" stroke-width="2.5" marker-end="url(#arrowB)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- Crossfeed -->
+          <line id="f_xfeed" x1="350" y1="170" x2="350" y2="226" stroke="#00e5a0" stroke-width="2.5" marker-end="url(#arrowG)" opacity="0" stroke-dasharray="8,4"/>
+          <line id="f_xfeed2" x1="350" y1="254" x2="350" y2="280" stroke="#00e5a0" stroke-width="2.5" marker-end="url(#arrowG)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- Normal feed highlight lines (always on dimly) -->
+          <line x1="260" y1="170" x2="260" y2="450" stroke="#22d3ee" stroke-width="1" opacity="0.12"/>
+          <line x1="440" y1="340" x2="440" y2="450" stroke="#22d3ee" stroke-width="1" opacity="0.12"/>
+
+          <!-- Stage label -->
+          <text id="stageLabel" x="350" y="435" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="700" letter-spacing="1">ALIMENTAZIONE NORMALE</text>
+
+        </svg>
+
+        <div class="flow-legend">
+          <div class="legend-item"><div class="legend-line" style="background:#22d3ee"></div> Alimentazione motori</div>
+          <div class="legend-item"><div class="legend-line" style="background:#ff6b1a"></div> Serbatoi esterni</div>
+          <div class="legend-item"><div class="legend-line" style="background:#e879f9"></div> Stage 1 (XFER + ala AFT)</div>
+          <div class="legend-item"><div class="legend-line" style="background:#ffd600"></div> Stage 2 (ala FWD)</div>
+          <div class="legend-item"><div class="legend-line" style="background:#00e5a0"></div> Crossfeed</div>
+        </div>
+      </div>
+
+      <h3>Logica di Trasferimento</h3>
+      <p>Il trasferimento verso i gruppi fusoliera si attiva quando il livello di un gruppo scende di circa <strong>50 kg rispetto al pieno</strong> e almeno un motore è in moto. Si disattiva quando il sensore di livello alto indica il serbatoio pieno.</p>
+      <div class="formula-box">
+        <div class="formula-label">Condizione di trasferimento (automatica)</div>
+        ATTIVA se:  level_group &lt; (level_full - 50 kg)  AND  engine_running<br>
+        DISATTIVA se: high_level_sensor = TRUE<br>
+        Serbatoio dichiarato "vuoto" dopo: livello_zero × 20 s
+      </div>
+
+      <div class="example-box">
+        <div class="example-label">✦ Trasferimento Manuale</div>
+        <p>Il pilota può sovrascrivere il sistema automatico selezionando <strong>Transfer Commit Switch → ENABLE</strong>. Opzioni disponibili: Selective Transfer (tutto il flusso verso un solo gruppo), Transfer Override (avanza alla fase successiva), Tank Interconnect (equalizza i due gruppi tramite valvola motorizzata).</p>
+      </div>
+    `
+  },
+
+  m12: {
+    eyebrow: '§ 12 · Simulazione Interattiva',
+    title: 'PRESSURIZZAZIONE E VENT',
+    accent: '#4ade80',
+    body: `
+      <h3>Scopo del Sistema</h3>
+      <p>Tutti i serbatoi sono pressurizzati per <strong>prevenire l'ebollizione del carburante</strong> alle alte quote (dove la pressione ambientale può scendere a ~200 hPa) e per garantire una pressione di aspirazione sufficiente alle pompe di bordo.</p>
+      <p>La pressurizzazione avviene tramite <strong>bleed air dal LP Compressor</strong> del motore. Il sistema di sfogo (vent) consente la ventilazione durante il rifornimento e impedisce la sovrapressione.</p>
+
+      <div class="flow-container">
+        <div class="flow-controls">
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;">SCENARIO:</span>
+          <button class="flow-btn active" id="vbtnGround" onclick="setVentMode('ground')">A TERRA</button>
+          <button class="flow-btn" id="vbtnClimb" onclick="setVentMode('climb')">SALITA</button>
+          <button class="flow-btn" id="vbtnCruise" onclick="setVentMode('cruise')">CROCIERA</button>
+          <button class="flow-btn" id="vbtnRefuel" onclick="setVentMode('refuel')">RIFORNIMENTO</button>
+        </div>
+
+        <svg id="ventSvg" viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" style="width:100%;max-height:440px;">
+          <defs>
+            <marker id="arrG2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4ade80"/></marker>
+            <marker id="arrB2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#22d3ee"/></marker>
+            <marker id="arrO2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ff6b1a"/></marker>
+            <marker id="arrW2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#fff"/></marker>
+          </defs>
+
+          <!-- TANKS structure -->
+          <!-- Front Transfer -->
+          <rect x="270" y="15" width="160" height="46" rx="6" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5"/>
+          <text x="350" y="34" text-anchor="middle" fill="#6b8ab0" font-size="10">FRONT TRANSFER</text>
+          <text x="350" y="51" text-anchor="middle" fill="#6b8ab0" font-size="8">Air/No Fuel Valve</text>
+          <!-- Air/no fuel valve symbol on tank -->
+          <circle cx="350" cy="62" r="7" fill="#0d1a2e" stroke="#3a5070" stroke-width="1" id="v_afv_front"/>
+          <line x1="344" y1="62" x2="356" y2="62" stroke="#3a5070" stroke-width="1.5" id="v_afv_front_line"/>
+
+          <!-- Fuse Front -->
+          <rect x="245" y="100" width="210" height="56" rx="6" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5"/>
+          <text x="350" y="122" text-anchor="middle" fill="#6b8ab0" font-size="10">FUSE FRONT GROUP</text>
+          <circle cx="350" cy="145" r="7" fill="#0d1a2e" stroke="#3a5070" stroke-width="1" id="v_afv_ff"/>
+          <line x1="344" y1="145" x2="356" y2="145" stroke="#3a5070" stroke-width="1.5"/>
+
+          <!-- Fuse Rear -->
+          <rect x="245" y="200" width="210" height="56" rx="6" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5"/>
+          <text x="350" y="222" text-anchor="middle" fill="#6b8ab0" font-size="10">FUSE REAR GROUP</text>
+          <circle cx="350" cy="245" r="7" fill="#0d1a2e" stroke="#3a5070" stroke-width="1" id="v_afv_fr"/>
+          <line x1="344" y1="245" x2="356" y2="245" stroke="#3a5070" stroke-width="1.5"/>
+
+          <!-- Wings L/R simplified -->
+          <path d="M50 135 L240 120 L240 152 L50 167 Z" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5"/>
+          <text x="145" y="158" text-anchor="middle" fill="#6b8ab0" font-size="9">L WING TANKS</text>
+          <path d="M650 135 L460 120 L460 152 L650 167 Z" fill="#0d1a2e" stroke="#3a5070" stroke-width="1.5"/>
+          <text x="555" y="158" text-anchor="middle" fill="#6b8ab0" font-size="9">R WING TANKS</text>
+
+          <!-- VENT PACKAGE (in fin - bottom right) -->
+          <rect x="475" y="320" width="200" height="130" rx="8" fill="#060c14" stroke="#4ade80" stroke-width="1.5"/>
+          <text x="575" y="340" text-anchor="middle" fill="#4ade80" font-size="10" font-weight="700" letter-spacing="1">VENT PACKAGE</text>
+          <text x="575" y="354" text-anchor="middle" fill="#3a5070" font-size="9">in deriva verticale</text>
+
+          <!-- RAM AIR label -->
+          <text x="660" y="380" text-anchor="end" fill="#22d3ee" font-size="9">RAM AIR →</text>
+
+          <!-- Inward vent valves x2 (inside vent box) -->
+          <circle cx="530" cy="390" r="10" fill="#0d1a2e" stroke="#4ade80" stroke-width="1.5" id="vv_inward1"/>
+          <text x="530" y="394" text-anchor="middle" fill="#4ade80" font-size="8">IV</text>
+          <circle cx="570" cy="390" r="10" fill="#0d1a2e" stroke="#4ade80" stroke-width="1.5" id="vv_inward2"/>
+          <text x="570" y="394" text-anchor="middle" fill="#4ade80" font-size="8">IV</text>
+
+          <!-- Outward vent valves x2 -->
+          <circle cx="530" cy="425" r="10" fill="#0d1a2e" stroke="#22d3ee" stroke-width="1.5" id="vv_outward1"/>
+          <text x="530" y="429" text-anchor="middle" fill="#22d3ee" font-size="8">OV</text>
+          <circle cx="570" cy="425" r="10" fill="#0d1a2e" stroke="#22d3ee" stroke-width="1.5" id="vv_outward2"/>
+          <text x="570" y="429" text-anchor="middle" fill="#22d3ee" font-size="8">OV</text>
+
+          <!-- Vent bypass valve -->
+          <circle cx="615" cy="390" r="10" fill="#0d1a2e" stroke="#ffd600" stroke-width="1.5" id="vv_bypass"/>
+          <text x="615" y="394" text-anchor="middle" fill="#ffd600" font-size="7">VBP</text>
+
+          <!-- VENT OUTLET label -->
+          <text x="575" y="450" text-anchor="middle" fill="#3a5070" font-size="9">VENT OUTLET →</text>
+
+          <!-- LP COMPRESSOR source (bottom left) -->
+          <rect x="30" y="390" width="140" height="50" rx="6" fill="#060c14" stroke="#ff6b1a" stroke-width="1.5"/>
+          <text x="100" y="410" text-anchor="middle" fill="#ff6b1a" font-size="10" font-weight="700">LP COMPRESSOR</text>
+          <text x="100" y="428" text-anchor="middle" fill="#ff6b1a" font-size="9">BLEED AIR</text>
+
+          <!-- HP/LP pressure regulating valves (center bottom) -->
+          <circle cx="230" cy="400" r="14" fill="#0d1a2e" stroke="#ff6b1a" stroke-width="1.5" id="vv_lp_prv"/>
+          <text x="230" y="404" text-anchor="middle" fill="#ff6b1a" font-size="8">LP-PRV</text>
+          <circle cx="280" cy="400" r="14" fill="#0d1a2e" stroke="#e879f9" stroke-width="1.5" id="vv_hp_prv"/>
+          <text x="280" y="404" text-anchor="middle" fill="#e879f9" font-size="8">HP-PRV</text>
+
+          <!-- Non-return valve -->
+          <circle cx="350" cy="380" r="10" fill="#0d1a2e" stroke="#fff" stroke-width="1.5" id="vv_nrv"/>
+          <text x="350" y="384" text-anchor="middle" fill="#888" font-size="8">NRV</text>
+
+          <!-- Temperature sensor -->
+          <rect x="395" y="320" width="60" height="20" rx="4" fill="#0d1a2e" stroke="#ffd600" stroke-width="1"/>
+          <text x="425" y="334" text-anchor="middle" fill="#ffd600" font-size="9">T SENS</text>
+
+          <!-- Pressure sensor -->
+          <rect x="390" y="350" width="60" height="20" rx="4" fill="#0d1a2e" stroke="#ffd600" stroke-width="1"/>
+          <text x="420" y="364" text-anchor="middle" fill="#ffd600" font-size="9">P SENS</text>
+
+          <!-- Pressure vent valve (to external tanks) -->
+          <circle cx="180" cy="360" r="11" fill="#0d1a2e" stroke="#c084fc" stroke-width="1.5" id="vv_pvv"/>
+          <text x="180" y="364" text-anchor="middle" fill="#c084fc" font-size="8">PVV</text>
+          <text x="155" y="390" text-anchor="middle" fill="#3a5070" font-size="8">→ EXT TANKS</text>
+
+          <!-- Main pressurization manifold (horizontal pipe) -->
+          <line x1="170" y1="310" x2="630" y2="310" stroke="#3a5070" stroke-width="2" stroke-dasharray="4,3" id="manifold"/>
+
+          <!-- FLOW PATHS - pressurization (bleed air going up) -->
+          <path id="vf_bleed_main" d="M170 390 L170 310" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrO2)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="vf_main_ff" d="M350 310 L350 256" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrO2)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="vf_main_fr" d="M310 310 L310 200" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrO2)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="vf_main_ft" d="M350 310 L350 70" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrO2)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="vf_main_wL" d="M200 310 L145 167" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrO2)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="vf_main_wR" d="M500 310 L555 167" fill="none" stroke="#ff6b1a" stroke-width="2.5" marker-end="url(#arrO2)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- VENT paths - air escaping out -->
+          <path id="vf_vent_out" d="M575 320 L575 280 L630 250" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrB2)" opacity="0" stroke-dasharray="8,4"/>
+          <path id="vf_ram" d="M660 380 L640 380" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrB2)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- Refuel venting path -->
+          <path id="vf_refuel_vent" d="M350 100 L420 100 L470 310" fill="none" stroke="#4ade80" stroke-width="2" marker-end="url(#arrG2)" opacity="0" stroke-dasharray="8,4"/>
+
+          <!-- Status text -->
+          <text id="ventStatus" x="350" y="470" text-anchor="middle" fill="#4ade80" font-size="11" font-weight="700" letter-spacing="1">STATO: A TERRA · SERBATOI VENTILATI</text>
+
+        </svg>
+
+        <div class="flow-legend">
+          <div class="legend-item"><div class="legend-line" style="background:#ff6b1a"></div> Bleed air pressurizzazione</div>
+          <div class="legend-item"><div class="legend-line" style="background:#22d3ee"></div> Flusso vent / RAM air</div>
+          <div class="legend-item"><div class="legend-line" style="background:#4ade80"></div> Sfogo rifornimento</div>
+          <div class="legend-item"><div class="legend-line" style="background:#ffd600"></div> Sensori P/T</div>
+        </div>
+      </div>
+
+      <h3>Componenti Principali (Fig. 1.45)</h3>
+      <table class="fuel-table">
+        <thead><tr><th>#</th><th>Componente</th><th>Funzione</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Air/No Fuel Valve</td><td>Permette aria ma blocca carburante verso il vent system</td></tr>
+          <tr><td>2</td><td>Temperature Sensor</td><td>Misura T del carburante per calcolo massa e sicurezza</td></tr>
+          <tr><td>3</td><td>Inward Vent Valve</td><td>Apre per permettere aria in ingresso (prevenzione vuoto)</td></tr>
+          <tr><td>4</td><td>Outward Vent Valve</td><td>Apre per sfogare aria in eccesso verso vent outlet</td></tr>
+          <tr><td>5</td><td>Vent Bypass Valve</td><td>Bypassa il sistema vent in caso di anomalia</td></tr>
+          <tr><td>6</td><td>HP Pressure Reg. Valve</td><td>Regola la pressione del bleed air ad alta pressione</td></tr>
+          <tr><td>7</td><td>LP Pressure Reg. Valve</td><td>Seconda regolazione a pressione più bassa per i serbatoi</td></tr>
+          <tr><td>8</td><td>Non Return Valve</td><td>Impedisce il riflusso del bleed air verso il compressore</td></tr>
+          <tr><td>9</td><td>Pressure Sensor</td><td>Misura la pressione interna ai serbatoi</td></tr>
+          <tr><td>10</td><td>Pressure Vent Valve</td><td>Controlla pressione verso serbatoi esterni</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example-box">
+        <div class="example-label">✦ Altitudine critica senza pressurizzazione</div>
+        <p>Il Jet A-1 ha tensione di vapore ~0.6 kPa a 20°C. A 12,000 m la pressione scende a ~19 kPa. Senza pressurizzazione, il carburante in superficie inizia a formare vapori, riducendo la densità e potenzialmente causando cavitazione nelle pompe e instabilità nella combustione. Il sistema mantiene la pressione interna ≥ ~30 kPa in ogni condizione di volo.</p>
+      </div>
+    `
+  }
+
+};
+
+// FLOW DIAGRAM INTERACTIVITY
+function setFlowMode(mode) {
+  const btns = {
+    'normal': 'btnNorm', 'external': 'btnExt',
+    'stage1': 'btnS1', 'stage2': 'btnS2', 'xfeed': 'btnXfeed'
+  };
+  Object.keys(btns).forEach(k => {
+    const b = document.getElementById(btns[k]);
+    if (b) b.className = 'flow-btn' + (k === mode ? ' active' : '');
+  });
+
+  const allFlows = ['f_fwd_engL','f_rear_engR','f_extL_rear','f_extR_fwd','f_extC',
+    'f_frontXfer','f_wLR_fuse','f_wRR_fuse','f_wLF_fuse','f_wRF_fuse','f_xfeed','f_xfeed2'];
+
+  const allTanks = ['tFront','tFuseFwd','tFuseRear','tWLF','tWLR','tWRF','tWRR','tExtL','tExtR','tExtC','xfeedValve'];
+
+  // Reset all
+  allFlows.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity = '0'; el.classList.remove('flow-active','flow-active-slow'); }
+  });
+  allTanks.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.stroke = '#3a5070'; el.classList.remove('tank-active'); }
+  });
+
+  const lbl = document.getElementById('stageLabel');
+
+  const show = (ids, cls='flow-active') => ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity = '1'; el.classList.add(cls); }
+  });
+  const activeTank = (ids, color) => ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.stroke = color; el.classList.add('tank-active'); }
+  });
+
+  if (mode === 'normal') {
+    show(['f_fwd_engL','f_rear_engR']);
+    activeTank(['tFuseFwd','tFuseRear'], '#22d3ee');
+    if (lbl) lbl.textContent = 'ALIMENTAZIONE NORMALE · FUSE GROUPS → MOTORI';
+  } else if (mode === 'external') {
+    show(['f_extL_rear','f_extR_fwd','f_extC','f_fwd_engL','f_rear_engR'],'flow-active-slow');
+    activeTank(['tExtL','tExtR','tExtC'], '#ff6b1a');
+    activeTank(['tFuseFwd','tFuseRear'], '#22d3ee');
+    if (lbl) lbl.textContent = 'TRASFERIMENTO SERBATOI ESTERNI → GRUPPI FUSOLIERA';
+  } else if (mode === 'stage1') {
+    show(['f_frontXfer','f_wLR_fuse','f_wRR_fuse','f_fwd_engL','f_rear_engR'],'flow-active-slow');
+    activeTank(['tFront','tWLR','tWRR'], '#e879f9');
+    activeTank(['tFuseFwd','tFuseRear'], '#22d3ee');
+    if (lbl) lbl.textContent = 'STAGE 1 · FRONT XFER + AFT WING → GRUPPI FUSOLIERA';
+  } else if (mode === 'stage2') {
+    show(['f_wLF_fuse','f_wRF_fuse','f_fwd_engL','f_rear_engR'],'flow-active-slow');
+    activeTank(['tWLF','tWRF'], '#ffd600');
+    activeTank(['tFuseFwd','tFuseRear'], '#22d3ee');
+    if (lbl) lbl.textContent = 'STAGE 2 · FORWARD WING TANKS → GRUPPI FUSOLIERA';
+  } else if (mode === 'xfeed') {
+    show(['f_xfeed','f_xfeed2','f_fwd_engL','f_rear_engR']);
+    activeTank(['xfeedValve'], '#00e5a0');
+    activeTank(['tFuseFwd','tFuseRear'], '#22d3ee');
+    if (lbl) lbl.textContent = 'CROSSFEED · ENTRAMBI I GRUPPI → ENTRAMBI I MOTORI';
+  }
+}
+
+// VENT DIAGRAM INTERACTIVITY
+function setVentMode(mode) {
+  const vbtns = {
+    'ground': 'vbtnGround', 'climb': 'vbtnClimb',
+    'cruise': 'vbtnCruise', 'refuel': 'vbtnRefuel'
+  };
+  Object.keys(vbtns).forEach(k => {
+    const b = document.getElementById(vbtns[k]);
+    if (b) b.className = 'flow-btn' + (k === mode ? ' active' : '');
+  });
+
+  const vFlows = ['vf_bleed_main','vf_main_ff','vf_main_fr','vf_main_ft','vf_main_wL','vf_main_wR','vf_vent_out','vf_ram','vf_refuel_vent'];
+  vFlows.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity = '0'; el.classList.remove('flow-active','flow-active-slow'); }
+  });
+
+  const vshow = (ids, cls='flow-active') => ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity = '1'; el.classList.add(cls); }
+  });
+
+  const vstatus = document.getElementById('ventStatus');
+
+  // Update valve visuals
+  const lpPrv = document.getElementById('vv_lp_prv');
+  const hpPrv = document.getElementById('vv_hp_prv');
+  const inw1 = document.getElementById('vv_inward1');
+  const outw1 = document.getElementById('vv_outward1');
+  const manifold = document.getElementById('manifold');
+
+  const resetValves = () => {
+    [lpPrv, hpPrv, inw1, outw1].forEach(v => { if(v) v.style.stroke = '#3a5070'; });
+    if(manifold) manifold.style.stroke = '#3a5070';
+  };
+  resetValves();
+
+  if (mode === 'ground') {
+    vshow(['vf_vent_out','vf_ram'], 'flow-active-slow');
+    if(inw1) inw1.style.stroke = '#22d3ee';
+    if(outw1) outw1.style.stroke = '#22d3ee';
+    if (vstatus) vstatus.textContent = 'A TERRA · SERBATOI VENTILATI · VALVOLE VENT APERTE';
+  } else if (mode === 'climb') {
+    vshow(['vf_bleed_main','vf_main_ff','vf_main_fr','vf_main_ft','vf_main_wL','vf_main_wR'], 'flow-active-slow');
+    vshow(['vf_vent_out'], 'flow-active');
+    if(lpPrv) lpPrv.style.stroke = '#ff6b1a';
+    if(manifold) manifold.style.stroke = '#ff6b1a';
+    if (vstatus) vstatus.textContent = 'SALITA · LP BLEED AIR → PRESSURIZZAZIONE + VENT OUTLET';
+  } else if (mode === 'cruise') {
+    vshow(['vf_bleed_main','vf_main_ff','vf_main_fr','vf_main_ft','vf_main_wL','vf_main_wR']);
+    if(lpPrv) lpPrv.style.stroke = '#ff6b1a';
+    if(hpPrv) hpPrv.style.stroke = '#e879f9';
+    if(manifold) manifold.style.stroke = '#ff6b1a';
+    if (vstatus) vstatus.textContent = 'CROCIERA · PRESSURIZZAZIONE ATTIVA · ΔP SERBATOI > ATM';
+  } else if (mode === 'refuel') {
+    vshow(['vf_vent_out','vf_refuel_vent'], 'flow-active');
+    if(outw1) outw1.style.stroke = '#4ade80';
+    if (vstatus) vstatus.textContent = 'RIFORNIMENTO · ARIA SFOGATA VERSO VENT OUTLET';
+  }
+}
+
+// ===== MODALS m13–m16 =====
+modals.m13 = {
+  eyebrow: '§ 13 · Termoregolazione',
+  title: 'FUEL COOLING SYSTEM',
+  accent: '#f87171',
+  body: `
+    <h3>Scopo del Sistema</h3>
+    <p>Il carburante dell'EFA funge da <strong>heat sink (pozzo termico)</strong> per mantenere gli oli lubrificanti sotto la loro temperatura massima, senza superare il limite di <strong>95 °C all'ingresso motore</strong>. Il sistema gestisce il calore generato da: olio idraulico, olio generatore AC, olio gearbox SPS e DECU.</p>
+
+    <div class="flow-container">
+      <div class="flow-controls">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;">SCENARIO:</span>
+        <button class="flow-btn active" id="fcBtn1" onclick="setFCMode('normal')">CROCIERA NORMALE</button>
+        <button class="flow-btn" id="fcBtn2" onclick="setFCMode('hot')">ALTA TEMPERATURA</button>
+        <button class="flow-btn" id="fcBtn3" onclick="setFCMode('decu')">RAFFREDDAMENTO DECU</button>
+      </div>
+      <svg id="fcSvg" viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" style="width:100%;max-height:320px;">
+        <defs>
+          <marker id="arRed" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f87171"/></marker>
+          <marker id="arBlue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#22d3ee"/></marker>
+          <marker id="arGold" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ffd600"/></marker>
+          <marker id="arPurp" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e879f9"/></marker>
+        </defs>
+
+        <!-- COLLECTOR TANK (source) -->
+        <rect x="20" y="120" width="120" height="60" rx="8" fill="#0d1525" stroke="#6b8ab0" stroke-width="1.5"/>
+        <text x="80" y="146" text-anchor="middle" fill="#6b8ab0" font-size="10" font-weight="700">COLLECTOR</text>
+        <text x="80" y="162" text-anchor="middle" fill="#3a5070" font-size="9">TANK</text>
+
+        <!-- CROSSFEED LINE tap point -->
+        <rect x="20" y="210" width="80" height="30" rx="5" fill="#0d1525" stroke="#3a5070" stroke-width="1"/>
+        <text x="60" y="228" text-anchor="middle" fill="#3a5070" font-size="8">XFEED LINE</text>
+
+        <!-- FCOC box — 3 exchangers -->
+        <rect x="200" y="90" width="180" height="130" rx="8" fill="#0d1525" stroke="#f87171" stroke-width="2"/>
+        <text x="290" y="113" text-anchor="middle" fill="#f87171" font-size="11" font-weight="700">FCOC</text>
+        <text x="290" y="128" text-anchor="middle" fill="#3a5070" font-size="8">Fuel-Cooled Oil Cooler</text>
+        <!-- 3 sub-exchangers -->
+        <rect x="212" y="135" width="48" height="32" rx="4" fill="#1e3056" stroke="#f87171" stroke-width="1" id="fc_hyd"/>
+        <text x="236" y="152" text-anchor="middle" fill="#f87171" font-size="8">HYD</text>
+        <rect x="266" y="135" width="48" height="32" rx="4" fill="#1e3056" stroke="#ffd600" stroke-width="1" id="fc_gen"/>
+        <text x="290" y="152" text-anchor="middle" fill="#ffd600" font-size="8">GEN</text>
+        <rect x="320" y="135" width="48" height="32" rx="4" fill="#1e3056" stroke="#e879f9" stroke-width="1" id="fc_gbx"/>
+        <text x="344" y="152" text-anchor="middle" fill="#e879f9" font-size="8">GBX</text>
+        <!-- Temp out indicator -->
+        <rect x="220" y="178" width="140" height="22" rx="4" fill="#0d1525" stroke="#f87171" stroke-width="1" id="fc_temp_box"/>
+        <text x="290" y="193" text-anchor="middle" fill="#f87171" font-size="9" id="fc_temp_text">T_out: ~55°C</text>
+
+        <!-- ACFC box -->
+        <rect x="450" y="90" width="180" height="80" rx="8" fill="#0d1525" stroke="#22d3ee" stroke-width="2"/>
+        <text x="540" y="118" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="700">ACFC</text>
+        <text x="540" y="134" text-anchor="middle" fill="#3a5070" font-size="9">Air-Cooled Fuel Cooler</text>
+        <text x="540" y="150" text-anchor="middle" fill="#3a5070" font-size="8">sottofusoliera · RAM air</text>
+        <!-- RAM air arrows -->
+        <text x="540" y="78" text-anchor="middle" fill="#22d3ee" font-size="9">↓ RAM AIR</text>
+
+        <!-- RESTRICTOR -->
+        <rect x="475" y="200" width="90" height="28" rx="4" fill="#0d1525" stroke="#ffd600" stroke-width="1.5"/>
+        <text x="520" y="218" text-anchor="middle" fill="#ffd600" font-size="9">RESTRICTOR</text>
+
+        <!-- ENGINE -->
+        <rect x="475" y="265" width="90" height="44" rx="6" fill="#0d1525" stroke="#00e5a0" stroke-width="1.5"/>
+        <text x="520" y="285" text-anchor="middle" fill="#00e5a0" font-size="11" font-weight="700">MOTORE</text>
+        <text x="520" y="301" text-anchor="middle" fill="#3a5070" font-size="8">EJ200</text>
+
+        <!-- DECU box -->
+        <rect x="200" y="265" width="140" height="44" rx="6" fill="#0d1525" stroke="#e879f9" stroke-width="1.5"/>
+        <text x="270" y="285" text-anchor="middle" fill="#e879f9" font-size="10" font-weight="700">DECU</text>
+        <text x="270" y="301" text-anchor="middle" fill="#3a5070" font-size="8">Digital Engine Control</text>
+
+        <!-- Temp limit badge -->
+        <rect x="600" y="265" width="90" height="44" rx="6" fill="#f8717120" stroke="#f87171" stroke-width="1.5"/>
+        <text x="645" y="284" text-anchor="middle" fill="#f87171" font-size="10" font-weight="700">MAX</text>
+        <text x="645" y="300" text-anchor="middle" fill="#f87171" font-size="13" font-weight="700">95°C</text>
+
+        <!-- ===== FLOW PATHS ===== -->
+        <!-- Main fuel supply to FCOC (tap off crossfeed line) -->
+        <path id="fc_f1" d="M100 175 L200 175" fill="none" stroke="#f87171" stroke-width="2.5" marker-end="url(#arRed)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- FCOC → ACFC -->
+        <path id="fc_f2" d="M380 145 L450 145" fill="none" stroke="#f87171" stroke-width="2.5" marker-end="url(#arRed)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- ACFC → Restrictor -->
+        <path id="fc_f3" d="M540 170 L540 200" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arBlue)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Restrictor → Collector (recirculation) -->
+        <path id="fc_f4" d="M475 214 Q290 214 80 180" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#arBlue)" opacity="0" stroke-dasharray="6,4"/>
+        <!-- Collector → Engine (main supply) -->
+        <path id="fc_f5" d="M100 160 Q100 310 475 300" fill="none" stroke="#34d399" stroke-width="2.5" marker-end="url(#arRed)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- DECU tapping -->
+        <path id="fc_f6" d="M340 300 L200 300" fill="none" stroke="#e879f9" stroke-width="2" marker-end="url(#arPurp)" opacity="0" stroke-dasharray="6,4"/>
+        <!-- Oil → FCOC (HYD) -->
+        <path id="fc_oil1" d="M290 60 L236 135" fill="none" stroke="#f87171" stroke-width="1.5" marker-end="url(#arRed)" opacity="0" stroke-dasharray="4,3"/>
+        <!-- Oil → FCOC (GEN) -->
+        <path id="fc_oil2" d="M290 60 L290 135" fill="none" stroke="#ffd600" stroke-width="1.5" marker-end="url(#arGold)" opacity="0" stroke-dasharray="4,3"/>
+        <!-- Oil → FCOC (GBX) -->
+        <path id="fc_oil3" d="M290 60 L344 135" fill="none" stroke="#e879f9" stroke-width="1.5" marker-end="url(#arPurp)" opacity="0" stroke-dasharray="4,3"/>
+
+        <!-- Static oil sources labels -->
+        <text x="200" y="56" fill="#f87171" font-size="8">HYD OIL</text>
+        <text x="278" y="56" fill="#ffd600" font-size="8">GEN OIL</text>
+        <text x="350" y="56" fill="#e879f9" font-size="8">GBX OIL</text>
+
+        <!-- Status label -->
+        <text id="fcStatus" x="350" y="24" text-anchor="middle" fill="#f87171" font-size="11" font-weight="700" letter-spacing="1">CROCIERA · CICLO DI RAFFREDDAMENTO ATTIVO</text>
+      </svg>
+      <div class="flow-legend">
+        <div class="legend-item"><div class="legend-line" style="background:#f87171"></div> Carburante caldo (dopo FCOC)</div>
+        <div class="legend-item"><div class="legend-line" style="background:#22d3ee"></div> Carburante raffreddato (ACFC→serbatoio)</div>
+        <div class="legend-item"><div class="legend-line" style="background:#34d399"></div> Alimentazione motore</div>
+        <div class="legend-item"><div class="legend-line" style="background:#e879f9"></div> Tapping DECU</div>
+      </div>
+    </div>
+
+    <h3>Componenti e Funzionamento</h3>
+    <p>Il carburante viene prelevato <strong>a valle della valvola crossfeed e a monte della LP COCK</strong>. Dopo il FCOC (dove assorbe calore dagli oli), il carburante caldo passa nell'<strong>ACFC</strong> montato sul lato inferiore della fusoliera, dove viene raffreddato dalla RAM air. Ritorna al collector tank attraverso un <strong>restrictor</strong> che sopprime l'ebollizione, mescolandosi con il carburante freddo grazie alle boost pump.</p>
+
+    <div class="formula-box">
+      <div class="formula-label">Bilancio termico FCOC</div>
+      Q_dissipato = ṁ_fuel × Cp_fuel × (T_out - T_in)<br>
+      Cp_fuel ≈ 2.0 kJ/(kg·K)   ρ_fuel ≈ 800 kg/m³<br><br>
+      Limite operativo: T_fuel_engine ≤ 95°C<br>
+      CAT3 warning: T ≥ 86°C  |  CAT2 warning: T ≥ 93°C
+    </div>
+
+    <h3>Raffreddamento DECU</h3>
+    <p>Il <strong>DECU (Digital Engine Control Unit)</strong> viene raffreddato tramite un tapping separato dalle linee di alimentazione motore, tra il LP COCK e il motore stesso. Questo circuito è indipendente dal ciclo FCOC/ACFC.</p>
+
+    <div class="example-box">
+      <div class="example-label">✦ Perché il carburante come heat sink?</div>
+      <p>Il carburante aeronautico ha Cp ≈ 2 kJ/kg·K e scorre già in circolo a bordo. Usarlo come refrigerante evita sistemi dedicati pesanti. Sul Typhoon gestisce diversi kW di calore dagli impianti idraulici, elettrici e del gearbox, con portata variabile in funzione del regime motore.</p>
+    </div>
+  `
+};
+
+modals.m14 = {
+  eyebrow: '§ 14 · Alimentazione Motori',
+  title: 'ENGINE FUEL SUPPLY SYSTEM',
+  accent: '#34d399',
+  body: `
+    <h3>Architettura di Alimentazione</h3>
+    <p>Il sistema alimenta ciascun motore tramite una <strong>linea indipendente</strong>: il motore sinistro dal <em>Forward Fuselage Group</em>, il destro dal <em>Rear Fuselage Group</em>. In caso di necessità il <strong>crossfeed valve</strong> consente alimentazione incrociata.</p>
+
+    <div class="flow-container">
+      <div class="flow-controls">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;">SCENARIO:</span>
+        <button class="flow-btn active" id="efBtn1" onclick="setEFMode('normal')">NORMALE</button>
+        <button class="flow-btn" id="efBtn2" onclick="setEFMode('bp_fail')">SINGLE BP FAIL</button>
+        <button class="flow-btn" id="efBtn3" onclick="setEFMode('dc_emg')">DC EMERGENZA</button>
+        <button class="flow-btn" id="efBtn4" onclick="setEFMode('xfeed')">CROSSFEED OPEN</button>
+        <button class="flow-btn" id="efBtn5" onclick="setEFMode('apu')">APU FEED</button>
+      </div>
+      <svg id="efSvg" viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" style="width:100%;max-height:360px;">
+        <defs>
+          <marker id="efArG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#34d399"/></marker>
+          <marker id="efArR" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f87171"/></marker>
+          <marker id="efArY" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ffd600"/></marker>
+          <marker id="efArP" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e879f9"/></marker>
+        </defs>
+
+        <!-- FUSE FRONT GROUP (L) -->
+        <rect x="30" y="50" width="170" height="80" rx="8" fill="#0d1525" stroke="#34d399" stroke-width="1.5"/>
+        <text x="115" y="78" text-anchor="middle" fill="#34d399" font-size="10" font-weight="700">FUSE FRONT GROUP</text>
+        <text x="115" y="94" text-anchor="middle" fill="#3a5070" font-size="9">collector tank</text>
+        <!-- BP1 L -->
+        <circle cx="75" cy="115" r="16" fill="#0d1525" stroke="#34d399" stroke-width="1.5" id="ef_bpL1"/>
+        <text x="75" y="119" text-anchor="middle" fill="#34d399" font-size="9" id="ef_bpL1t">BP₁</text>
+        <!-- BP2 L -->
+        <circle cx="115" cy="115" r="16" fill="#0d1525" stroke="#34d399" stroke-width="1.5" id="ef_bpL2"/>
+        <text x="115" y="119" text-anchor="middle" fill="#34d399" font-size="9" id="ef_bpL2t">BP₂</text>
+        <!-- DC pump L -->
+        <circle cx="155" cy="115" r="14" fill="#0d1525" stroke="#f87171" stroke-width="1.5" id="ef_dcpump"/>
+        <text x="155" y="112" text-anchor="middle" fill="#f87171" font-size="8" id="ef_dct">DC</text>
+        <text x="155" y="122" text-anchor="middle" fill="#f87171" font-size="8">PUMP</text>
+
+        <!-- NRV after each pump -->
+        <polygon points="75,138 82,148 68,148" fill="#34d399" opacity="0.6" id="ef_nrvL1"/>
+        <polygon points="115,138 122,148 108,148" fill="#34d399" opacity="0.6" id="ef_nrvL2"/>
+
+        <!-- FUSE REAR GROUP (R) -->
+        <rect x="500" y="50" width="170" height="80" rx="8" fill="#0d1525" stroke="#34d399" stroke-width="1.5"/>
+        <text x="585" y="78" text-anchor="middle" fill="#34d399" font-size="10" font-weight="700">FUSE REAR GROUP</text>
+        <text x="585" y="94" text-anchor="middle" fill="#3a5070" font-size="9">collector tank</text>
+        <!-- BP1 R -->
+        <circle cx="545" cy="115" r="16" fill="#0d1525" stroke="#34d399" stroke-width="1.5" id="ef_bpR1"/>
+        <text x="545" y="119" text-anchor="middle" fill="#34d399" font-size="9">BP₁</text>
+        <!-- BP2 R -->
+        <circle cx="585" cy="115" r="16" fill="#0d1525" stroke="#34d399" stroke-width="1.5" id="ef_bpR2"/>
+        <text x="585" y="119" text-anchor="middle" fill="#34d399" font-size="9">BP₂</text>
+        <polygon points="545,138 552,148 538,148" fill="#34d399" opacity="0.6"/>
+        <polygon points="585,138 592,148 578,148" fill="#34d399" opacity="0.6"/>
+
+        <!-- LP COCK L -->
+        <circle cx="95" cy="185" r="18" fill="#0d1525" stroke="#34d399" stroke-width="2" id="ef_lpcL"/>
+        <text x="95" y="181" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">LP</text>
+        <text x="95" y="193" text-anchor="middle" fill="#34d399" font-size="8">COCK L</text>
+        <!-- LP COCK R -->
+        <circle cx="605" cy="185" r="18" fill="#0d1525" stroke="#34d399" stroke-width="2" id="ef_lpcR"/>
+        <text x="605" y="181" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">LP</text>
+        <text x="605" y="193" text-anchor="middle" fill="#34d399" font-size="8">COCK R</text>
+
+        <!-- CROSSFEED VALVE (center) -->
+        <circle cx="350" cy="185" r="22" fill="#0d1525" stroke="#ffd600" stroke-width="2" id="ef_xfv"/>
+        <text x="350" y="181" text-anchor="middle" fill="#ffd600" font-size="9" font-weight="700">XFEED</text>
+        <text x="350" y="195" text-anchor="middle" fill="#ffd600" font-size="8">NORM/OPEN</text>
+
+        <!-- FCOC tapping -->
+        <rect x="260" y="140" width="80" height="28" rx="4" fill="#0d1525" stroke="#f87171" stroke-width="1" id="ef_fcoc"/>
+        <text x="300" y="158" text-anchor="middle" fill="#f87171" font-size="9">FCOC tap</text>
+
+        <!-- ENGINE L -->
+        <rect x="40" y="280" width="110" height="48" rx="6" fill="#060c14" stroke="#00e5a0" stroke-width="2"/>
+        <text x="95" y="302" text-anchor="middle" fill="#00e5a0" font-size="11" font-weight="700">ENG L</text>
+        <text x="95" y="318" text-anchor="middle" fill="#3a5070" font-size="9">EJ200</text>
+        <!-- ENGINE R -->
+        <rect x="550" y="280" width="110" height="48" rx="6" fill="#060c14" stroke="#00e5a0" stroke-width="2"/>
+        <text x="605" y="302" text-anchor="middle" fill="#00e5a0" font-size="11" font-weight="700">ENG R</text>
+        <text x="605" y="318" text-anchor="middle" fill="#3a5070" font-size="9">EJ200</text>
+
+        <!-- APU -->
+        <rect x="295" y="280" width="110" height="48" rx="6" fill="#0d1525" stroke="#e879f9" stroke-width="1.5"/>
+        <text x="350" y="302" text-anchor="middle" fill="#e879f9" font-size="11" font-weight="700">APU</text>
+        <text x="350" y="318" text-anchor="middle" fill="#3a5070" font-size="9">SOV + gravity</text>
+
+        <!-- FLOW PATHS -->
+        <!-- Normal: FWD→LP-L→ENG-L -->
+        <path id="ef_n1" d="M95 165 L95 203" fill="none" stroke="#34d399" stroke-width="2.5" marker-end="url(#efArG)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="ef_n2" d="M95 203 L80 280" fill="none" stroke="#34d399" stroke-width="2.5" marker-end="url(#efArG)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Normal: REAR→LP-R→ENG-R -->
+        <path id="ef_n3" d="M605 165 L605 203" fill="none" stroke="#34d399" stroke-width="2.5" marker-end="url(#efArG)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="ef_n4" d="M605 203 L620 280" fill="none" stroke="#34d399" stroke-width="2.5" marker-end="url(#efArG)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- BP fail: single bp dims -->
+        <path id="ef_bpfail" d="M75 132 L75 165" fill="none" stroke="#f87171" stroke-width="3" opacity="0"/>
+        <!-- DC pump active -->
+        <path id="ef_dc1" d="M155 130 L155 185 L130 280" fill="none" stroke="#f87171" stroke-width="2.5" marker-end="url(#efArR)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Crossfeed path: FWD→XFEED→ENG-R  -->
+        <path id="ef_xf1" d="M113 185 L328 185" fill="none" stroke="#ffd600" stroke-width="2.5" marker-end="url(#efArY)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="ef_xf2" d="M372 185 L583 185" fill="none" stroke="#ffd600" stroke-width="2.5" marker-end="url(#efArY)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="ef_xf3" d="M605 203 L580 280" fill="none" stroke="#ffd600" stroke-width="2.5" marker-end="url(#efArY)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- APU feed line (gravity, from FWD collector) -->
+        <path id="ef_apu" d="M200 90 L350 90 L350 163" fill="none" stroke="#e879f9" stroke-width="2" marker-end="url(#efArP)" opacity="0" stroke-dasharray="6,4"/>
+        <path id="ef_apu2" d="M350 207 L350 280" fill="none" stroke="#e879f9" stroke-width="2" marker-end="url(#efArP)" opacity="0" stroke-dasharray="6,4"/>
+
+        <!-- Status label -->
+        <text id="efStatus" x="350" y="365" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700" letter-spacing="1">ALIMENTAZIONE NORMALE</text>
+      </svg>
+      <div class="flow-legend">
+        <div class="legend-item"><div class="legend-line" style="background:#34d399"></div> Flusso normale</div>
+        <div class="legend-item"><div class="legend-line" style="background:#f87171"></div> DC Emergency pump</div>
+        <div class="legend-item"><div class="legend-line" style="background:#ffd600"></div> Crossfeed</div>
+        <div class="legend-item"><div class="legend-line" style="background:#e879f9"></div> APU (gravità)</div>
+      </div>
+    </div>
+
+    <h3>LP COCK Switches</h3>
+    <p>I <strong>LP COCK</strong> sono interruttori bi-stabili coverguard. In posizione OPEN abilitano anche il circuito di accensione del motore. In posizione SHUT lo disabilitano. Il coverguard deve essere sollevato prima di agire sulla levetta.</p>
+
+    <div class="formula-box">
+      <div class="formula-label">Logica ridondanza boost pumps</div>
+      Normale:       BP1 + BP2 attive → massima pressione<br>
+      Single fail:   BP1 sola → pressione ridotta, avviso MHDD<br>
+      Double fail:   DC pump AUTO → alimentazione motore SX<br>
+      Total AC fail: DC pump → motore SX + ricircolo SX<br><br>
+      Crossfeed OPEN: entrambi i gruppi → entrambi i motori
+    </div>
+
+    <div class="example-box">
+      <div class="example-label">✦ Procedura Double Boost Pump Failure</div>
+      <p>Doppia BP guasta → <strong>FUEL P</strong> in rosso sul DWP + voce "RIGHT/LEFT FUEL PRESSURE". La DC pump si attiva in AUTO. Il pilota deve considerare di aprire il XFEED per mantenere pressione adeguata su entrambi i motori. Se il gruppo interessato è il posteriore (motore DX), il pilota può selezionare XFEED OPEN per alimentare il motore DX dal gruppo anteriore.</p>
+    </div>
+  `
+};
+
+modals.m15 = {
+  eyebrow: '§ 15 · Rifornimento & AAR',
+  title: 'RIFORNIMENTO A TERRA & IN VOLO',
+  accent: '#fb923c',
+  body: `
+    <h3>Rifornimento Pressurizzato Single-Point</h3>
+    <p>Il rifornimento avviene tramite un <strong>unico punto di connessione</strong> sul lato sinistro della fusoliera centrale (Fig. 1.47/1.48). L'<strong>UCS (Utilities Control System)</strong> controlla automaticamente l'apertura e chiusura delle valvole di riempimento di ciascun serbatoio, mentre l'<strong>MDP (Master Data Panel)</strong> consente la supervisione e il controllo manuale.</p>
+
+    <div class="flow-container">
+      <div class="flow-controls">
+        <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px;">MODALITÀ:</span>
+        <button class="flow-btn active" id="rfBtn1" onclick="setRFMode('ground_tot')">TERRA · TOT</button>
+        <button class="flow-btn" id="rfBtn2" onclick="setRFMode('ground_int')">TERRA · INT</button>
+        <button class="flow-btn" id="rfBtn3" onclick="setRFMode('defuel')">DEFUELING</button>
+        <button class="flow-btn" id="rfBtn4" onclick="setRFMode('aar_probe')">AAR PROBE</button>
+        <button class="flow-btn" id="rfBtn5" onclick="setRFMode('aar_contact')">AAR CONTATTO</button>
+      </div>
+      <svg id="rfSvg" viewBox="0 0 700 420" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" style="width:100%;max-height:400px;">
+        <defs>
+          <marker id="rfArO" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#fb923c"/></marker>
+          <marker id="rfArB" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#22d3ee"/></marker>
+          <marker id="rfArR" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f87171"/></marker>
+          <marker id="rfArG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#34d399"/></marker>
+        </defs>
+
+        <!-- FUEL BOWSER / TANKER aircraft (ground) -->
+        <rect x="20" y="170" width="110" height="50" rx="8" fill="#0d1525" stroke="#fb923c" stroke-width="1.5" id="rf_bowser"/>
+        <text x="75" y="193" text-anchor="middle" fill="#fb923c" font-size="10" font-weight="700">BOWSER</text>
+        <text x="75" y="209" text-anchor="middle" fill="#3a5070" font-size="8">pressure truck</text>
+
+        <!-- Tanker aircraft (AAR) -->
+        <rect x="20" y="50" width="130" height="50" rx="8" fill="#0d1525" stroke="#22d3ee" stroke-width="1.5" id="rf_tanker"/>
+        <text x="85" y="73" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="700">TANKER A/C</text>
+        <text x="85" y="88" text-anchor="middle" fill="#3a5070" font-size="8">drogue basket</text>
+
+        <!-- SINGLE POINT refuel coupling -->
+        <rect x="185" y="175" width="80" height="40" rx="5" fill="#0d1525" stroke="#fb923c" stroke-width="2" id="rf_coupling"/>
+        <text x="225" y="192" text-anchor="middle" fill="#fb923c" font-size="9" font-weight="700">SINGLE</text>
+        <text x="225" y="206" text-anchor="middle" fill="#fb923c" font-size="9" font-weight="700">POINT</text>
+
+        <!-- AAR PROBE -->
+        <rect x="185" y="55" width="80" height="40" rx="5" fill="#0d1525" stroke="#22d3ee" stroke-width="2" id="rf_probe"/>
+        <text x="225" y="72" text-anchor="middle" fill="#22d3ee" font-size="9" font-weight="700">IFR</text>
+        <text x="225" y="85" text-anchor="middle" fill="#22d3ee" font-size="9" font-weight="700">PROBE</text>
+
+        <!-- REFUEL/DEFUEL GALLERY (main manifold) -->
+        <rect x="320" y="145" width="250" height="30" rx="4" fill="#1e3056" stroke="#ffd600" stroke-width="1.5" id="rf_gallery"/>
+        <text x="445" y="165" text-anchor="middle" fill="#ffd600" font-size="9">REFUEL/DEFUEL/TRANSFER GALLERY</text>
+
+        <!-- Tanks structure (simplified) -->
+        <!-- FWD Fuse group -->
+        <rect x="320" y="55" width="110" height="50" rx="6" fill="#0d1525" stroke="#34d399" stroke-width="1.5" id="rf_tFwd"/>
+        <text x="375" y="78" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">FUSE FWD</text>
+        <text x="375" y="94" text-anchor="middle" fill="#3a5070" font-size="8">GROUP</text>
+        <!-- REAR Fuse group -->
+        <rect x="460" y="55" width="110" height="50" rx="6" fill="#0d1525" stroke="#34d399" stroke-width="1.5" id="rf_tRear"/>
+        <text x="515" y="78" text-anchor="middle" fill="#34d399" font-size="9" font-weight="700">FUSE REAR</text>
+        <text x="515" y="94" text-anchor="middle" fill="#3a5070" font-size="8">GROUP</text>
+        <!-- Wing tanks -->
+        <rect x="320" y="225" width="100" height="42" rx="6" fill="#0d1525" stroke="#6b8ab0" stroke-width="1.5" id="rf_tWing"/>
+        <text x="370" y="249" text-anchor="middle" fill="#6b8ab0" font-size="9">WING TANKS</text>
+        <!-- Ext tanks -->
+        <rect x="460" y="225" width="110" height="42" rx="6" fill="#0d1525" stroke="#6b8ab0" stroke-width="1.5" id="rf_tExt"/>
+        <text x="515" y="249" text-anchor="middle" fill="#6b8ab0" font-size="9">EXT TANKS</text>
+
+        <!-- Transfer isolate valve -->
+        <circle cx="350" cy="195" r="14" fill="#0d1525" stroke="#ffd600" stroke-width="1.5" id="rf_tiv"/>
+        <text x="350" y="199" text-anchor="middle" fill="#ffd600" font-size="8">TIV</text>
+
+        <!-- High level sensors labels -->
+        <text x="375" y="115" text-anchor="middle" fill="#00e5a0" font-size="8">⬛ Hi-level sensor</text>
+        <text x="515" y="115" text-anchor="middle" fill="#00e5a0" font-size="8">⬛ Hi-level sensor</text>
+
+        <!-- MDP / UCS control box -->
+        <rect x="320" y="310" width="130" height="50" rx="6" fill="#0d1525" stroke="#818cf8" stroke-width="1.5"/>
+        <text x="385" y="332" text-anchor="middle" fill="#818cf8" font-size="10" font-weight="700">UCS / MDP</text>
+        <text x="385" y="348" text-anchor="middle" fill="#3a5070" font-size="8">REFU TOT / INT / SIM</text>
+
+        <!-- Defuel isolate valve -->
+        <circle cx="550" cy="195" r="14" fill="#0d1525" stroke="#f87171" stroke-width="1.5" id="rf_div"/>
+        <text x="550" y="192" text-anchor="middle" fill="#f87171" font-size="7">DEFUEL</text>
+        <text x="550" y="202" text-anchor="middle" fill="#f87171" font-size="7">ISOL</text>
+
+        <!-- ===== FLOW PATHS ===== -->
+        <!-- Ground refuel (bowser → coupling → gallery) -->
+        <path id="rf_gnd1" d="M130 195 L185 195" fill="none" stroke="#fb923c" stroke-width="3" marker-end="url(#rfArO)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Gallery → FWD group -->
+        <path id="rf_g_fwd" d="M375 145 L375 105" fill="none" stroke="#fb923c" stroke-width="2.5" marker-end="url(#rfArO)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Gallery → REAR group -->
+        <path id="rf_g_rear" d="M515 145 L515 105" fill="none" stroke="#fb923c" stroke-width="2.5" marker-end="url(#rfArO)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Gallery → Wing tanks (TOT only) -->
+        <path id="rf_g_wing" d="M370 175 L370 225" fill="none" stroke="#fb923c" stroke-width="2.5" marker-end="url(#rfArO)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Gallery → Ext tanks (TOT only) -->
+        <path id="rf_g_ext" d="M515 175 L515 225" fill="none" stroke="#fb923c" stroke-width="2.5" marker-end="url(#rfArO)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Coupling → Gallery connection -->
+        <path id="rf_gnd2" d="M265 195 L320 195" fill="none" stroke="#fb923c" stroke-width="2.5" marker-end="url(#rfArO)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- Defuel: tanks → gallery → out -->
+        <path id="rf_def1" d="M375 105 L375 145" fill="none" stroke="#f87171" stroke-width="2.5" marker-end="url(#rfArR)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="rf_def2" d="M515 105 L515 145" fill="none" stroke="#f87171" stroke-width="2.5" marker-end="url(#rfArR)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="rf_def3" d="M320 195 L265 195" fill="none" stroke="#f87171" stroke-width="2.5" marker-end="url(#rfArR)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="rf_def4" d="M185 195 L130 195" fill="none" stroke="#f87171" stroke-width="2.5" marker-end="url(#rfArR)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- AAR probe extended -->
+        <path id="rf_aar1" d="M150 75 L185 75" fill="none" stroke="#22d3ee" stroke-width="3" marker-end="url(#rfArB)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- AAR fuel flow -->
+        <path id="rf_aar2" d="M265 75 L320 160" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#rfArB)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="rf_aar3" d="M375 145 L375 105" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#rfArB)" opacity="0" stroke-dasharray="8,4"/>
+        <path id="rf_aar4" d="M515 145 L515 105" fill="none" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#rfArB)" opacity="0" stroke-dasharray="8,4"/>
+        <!-- UCS control lines (dashed) -->
+        <path id="rf_ucs1" d="M385 310 L385 175" fill="none" stroke="#818cf8" stroke-width="1.5" marker-end="url(#rfArO)" opacity="0" stroke-dasharray="3,4"/>
+
+        <!-- PROB UNLK indicator -->
+        <rect x="185" y="115" width="80" height="22" rx="4" fill="#0d1525" stroke="#22d3ee" stroke-width="1" id="rf_probUnlk" opacity="0"/>
+        <text x="225" y="130" text-anchor="middle" fill="#22d3ee" font-size="9" id="rf_probTxt">PROB UNLK</text>
+
+        <!-- Vent system note -->
+        <rect x="590" y="140" width="100" height="40" rx="5" fill="#0d1525" stroke="#4ade80" stroke-width="1"/>
+        <text x="640" y="158" text-anchor="middle" fill="#4ade80" font-size="9">VENT</text>
+        <text x="640" y="172" text-anchor="middle" fill="#4ade80" font-size="8">aperto</text>
+
+        <!-- Status label -->
+        <text id="rfStatus" x="350" y="405" text-anchor="middle" fill="#fb923c" font-size="11" font-weight="700" letter-spacing="1">SELEZIONA UNA MODALITÀ</text>
+      </svg>
+      <div class="flow-legend">
+        <div class="legend-item"><div class="legend-line" style="background:#fb923c"></div> Rifornimento a terra</div>
+        <div class="legend-item"><div class="legend-line" style="background:#f87171"></div> Defueling</div>
+        <div class="legend-item"><div class="legend-line" style="background:#22d3ee"></div> AAR in volo</div>
+        <div class="legend-item"><div class="legend-line" style="background:#818cf8"></div> Controllo UCS</div>
+      </div>
+    </div>
+
+    <h3>Sequenze di Rifornimento (UCS)</h3>
+    <table class="fuel-table">
+      <thead><tr><th>Opzione SK</th><th>Step 1</th><th>Step 2</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td style="color:#fb923c">REFU TOT</td><td>Tutti i serbatoi interni simultanei</td><td>Ext tanks (quando 1° wing fwd è pieno)</td><td>Sequenza automatica UCS</td></tr>
+        <tr><td style="color:#ffd600">REFU INT</td><td>Solo serbatoi interni</td><td>—</td><td>Ext tanks esclusi</td></tr>
+        <tr><td style="color:#34d399">REFU SIM</td><td>Interni + Ext simultaneamente</td><td>—</td><td>Massima velocità rifornimento</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Rifornimento AAR — Procedura</h3>
+    <div class="formula-box">
+      <div class="formula-label">Sequenza AAR</div>
+      1. FUEL PROBE switch → seleziona estensione<br>
+      2. Sonda estesa: PROB UNLK illuminato + DWP IFR<br>
+      3. Contatto con il drogue: REFU STRT SK<br>
+      4. Riempimento automatico (high-level sensors chiudono)<br>
+      5. Disconnessione: sonda si retrae automaticamente<br><br>
+      Emergenza sonda bloccata fuori: EMGY OUT (HYD DX)<br>
+      Non rientrabile se HYD SX depressurizzato
+    </div>
+
+    <div class="example-box">
+      <div class="example-label">✦ AAR su Typhoon — Dettaglio Operativo</div>
+      <p>Durante l'AAR il sistema vent si depressurizza (EMGY OUT) per massimizzare la portata in ingresso e minimizzare la pressione di back-pressure. Le transfer isolate valves vengono chiuse e le pompe di trasferimento vengono fermate per evitare interferenze. La procedura si interrompe automaticamente quando i sensori di alto livello in tutti i serbatoi selezionati si attivano, o quando il contatto con il drogue del tanker si interrompe.</p>
+    </div>
+  `
+};
+
+modals.m16 = {
+  eyebrow: '§ 16 · Interfaccia Pilota',
+  title: 'MHDD · CONTROLLI & AVVISI',
+  accent: '#818cf8',
+  body: `
+    <h3>Display MHDD/FUEL — Clicca ogni elemento</h3>
+    <p>Il display MHDD/FUEL (Multi-Function Head-Down Display) fornisce al pilota la visualizzazione completa del sistema carburante. Clicca su ciascun elemento per scoprirne il significato operativo.</p>
+
+    <div class="flow-container" style="background:#000;border-color:#1a1a2e;padding:12px;">
+      <div id="mhddInfo" style="font-family:var(--font-mono);font-size:12px;color:#818cf8;padding:10px 14px;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.25);border-radius:8px;margin-bottom:12px;min-height:40px;line-height:1.5;">
+        ← Clicca un elemento del display MHDD per vedere il suo significato
+      </div>
+      <svg id="mhddSvg" viewBox="0 0 580 400" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" style="width:100%;cursor:pointer;background:#000;border-radius:8px;border:2px solid #1a1a2e;">
+        <rect width="580" height="400" fill="#020408"/>
+
+        <!-- ── ITEM 19: Total fuel kg ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[19] TOTAL KG: quantità totale carburante a bordo in kg. Somma di tutti i serbatoi interni ed esterni. Aggiornato in tempo reale dalle sonde.')" style="cursor:pointer">
+          <rect x="8" y="8" width="90" height="22" rx="3" fill="transparent" stroke="transparent"/>
+          <text x="12" y="26" fill="#00ff50" font-size="13" font-weight="700">5170KG</text>
+        </g>
+
+        <!-- ── ITEM 1: RDY (AAR status) ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[1] AAR STATUS — RDY: sonda pronta per contatto col drogue. COMP: ciclo di rifornimento AAR completato. Appare solo quando AAR è attivo e la sonda è fuori.')" style="cursor:pointer">
+          <rect x="360" y="10" width="48" height="20" rx="3" fill="#002200" stroke="#00ff50" stroke-width="1.5"/>
+          <text x="384" y="25" text-anchor="middle" fill="#00ff50" font-size="11" font-weight="700">RDY</text>
+        </g>
+
+        <!-- ── ITEM 2: AAR probe symbol ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[2] SONDA AAR: simbolo visivo della sonda IFR deployata. Lampeggia durante estensione/retrazione. Scompare quando la sonda è retratta e il vano è chiuso.')" style="cursor:pointer">
+          <rect x="315" y="10" width="40" height="20" rx="3" fill="#001133" stroke="#0066cc" stroke-width="1"/>
+          <text x="335" y="25" text-anchor="middle" fill="#0099ff" font-size="11">⟩⟩</text>
+        </g>
+
+        <!-- ── ITEM 17: XFER indicator ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[17] SELECTIVE TRANSFER INDICATOR: indica quale trasferimento selettivo manuale è in uso. XFER R = tutto il carburante trasferibile verso il gruppo posteriore. Appare solo quando il trasferimento manuale è attivo.')" style="cursor:pointer">
+          <rect x="40" y="38" width="84" height="34" rx="4" fill="#001144" stroke="#ffd600" stroke-width="1.5"/>
+          <text x="82" y="53" text-anchor="middle" fill="#ffd600" font-size="10" font-weight="700">XFER</text>
+          <text x="82" y="65" text-anchor="middle" fill="#ffd600" font-size="9">R</text>
+        </g>
+
+        <!-- ── FRONT TRANSFER TANK (item 18) ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[18] FRONT TRANSFER TANK: serbatoio di trasferimento anteriore. Separato dai due gruppi fusoliera. Contiene 2 pompe di trasferimento. Usato in Stage 1 (come primo serbatoio a svuotarsi).')" style="cursor:pointer">
+          <rect x="220" y="10" width="90" height="46" rx="4" fill="#0000cc" stroke="#00aaff" stroke-width="1.5"/>
+          <text x="265" y="30" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">250</text>
+          <text x="265" y="48" text-anchor="middle" fill="#88aacc" font-size="8">FWD XFER</text>
+        </g>
+
+        <!-- ── ITEM 3: FUSE FRONT GROUP (anomalia boost pump) ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[3] FORWARD FUSELAGE GROUP: livello carburante in kg. Sfondo AMBRA + cifre bianche = meno di 375 kg (LOW). Il quadratino ROSSO in alto a sinistra indica avaria boost pump. Riempimento rosso = boost pump failure.')" style="cursor:pointer">
+          <rect x="183" y="76" width="164" height="56" rx="4" fill="#0000bb" stroke="#ffaa00" stroke-width="2"/>
+          <rect x="183" y="76" width="14" height="14" fill="red" rx="2"/>
+          <text x="265" y="104" text-anchor="middle" fill="#ffaa00" font-size="15" font-weight="700">290</text>
+          <text x="265" y="122" text-anchor="middle" fill="#666" font-size="8">FUSE FWD GROUP</text>
+        </g>
+
+        <!-- ── ITEM 4: refuel/transfer lines ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[4] LINEE REFUEL/TRANSFER: le linee evidenziate mostrano i serbatoi correntemente in trasferimento o in fase di rifornimento. Animazione flusso quando attive.')" style="cursor:pointer">
+          <line x1="265" y1="56" x2="265" y2="76" stroke="#00aaff" stroke-width="3"/>
+          <line x1="265" y1="132" x2="265" y2="162" stroke="#00aaff" stroke-width="3"/>
+        </g>
+
+        <!-- ── ITEM 5: UNDERFUSELAGE EXT TANK ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[5] SERBATOIO ESTERNO UNDERFUSELAGE: visualizzato solo se montato. Occlude (scompare dal display) se non installato. Posizione centerline sotto la fusoliera. Capacità 1000 L, trasferimento tramite aria pressurizzata.')" style="cursor:pointer">
+          <rect x="200" y="162" width="130" height="48" rx="4" fill="#0000cc" stroke="#00aaff" stroke-width="1.5"/>
+          <text x="265" y="183" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">780</text>
+          <text x="265" y="201" text-anchor="middle" fill="#666" font-size="8">CENTER EXT TANK</text>
+        </g>
+
+        <!-- ── ITEM 6: AFT WING TANKS ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[6] AFT WING TANKS + TRANSFER PUMPS: i serbatoi posteriori dell alа. Riempimento bianco indica pompe di trasferimento attive (on). Usati in Stage 1 insieme al Front Transfer Tank.')" style="cursor:pointer">
+          <path d="M32 138 L180 122 L180 150 L32 166 Z" fill="#0000cc" stroke="#00aaff" stroke-width="1"/>
+          <text x="110" y="152" text-anchor="middle" fill="#fff" font-size="11">490</text>
+          <path d="M498 138 L350 122 L350 150 L498 166 Z" fill="#0000cc" stroke="#00aaff" stroke-width="1"/>
+          <text x="424" y="152" text-anchor="middle" fill="#fff" font-size="11">490</text>
+        </g>
+
+        <!-- ── ITEM 14: UNDERWING EXTERNAL TANKS ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[14] SERBATOI ESTERNI UNDERWING: uno sotto ciascuna ala, capacità 1000 L l uno. Occludono (scompaiono) se non installati. Sono i primi a essere trasferiti nella sequenza automatica.')" style="cursor:pointer">
+          <rect x="6" y="134" width="24" height="88" rx="12" fill="#0000cc" stroke="#00aaff" stroke-width="1"/>
+          <text x="18" y="180" text-anchor="middle" fill="#fff" font-size="8" transform="rotate(-90,18,180)">600</text>
+          <rect x="550" y="134" width="24" height="88" rx="12" fill="#0000cc" stroke="#00aaff" stroke-width="1"/>
+          <text x="562" y="180" text-anchor="middle" fill="#fff" font-size="8" transform="rotate(-90,562,180)">600</text>
+        </g>
+
+        <!-- ── ITEM 15: FORWARD WING TANKS ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[15] FORWARD WING TANKS + POMPE TRASFERIMENTO: i serbatoi anteriori delle ali. Riempimento bianco = pompe attive. Usati in Stage 2. Ogni ala è divisa in FWD/AFT per ridurre il movimento del CG.')" style="cursor:pointer">
+          <rect x="32" y="212" width="148" height="42" rx="4" fill="#0000cc" stroke="#00aaff" stroke-width="1"/>
+          <text x="106" y="237" text-anchor="middle" fill="#fff" font-size="11">420</text>
+          <rect x="350" y="212" width="148" height="42" rx="4" fill="#0000cc" stroke="#00aaff" stroke-width="1"/>
+          <text x="424" y="237" text-anchor="middle" fill="#fff" font-size="11">420</text>
+        </g>
+
+        <!-- ── ITEM 7: FUSE REAR GROUP ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[7] REAR FUSELAGE GROUP + BOOST PUMPS: gruppo posteriore, alimenta il motore destro. Riempimento bianco = boost pumps attive. Stessa logica del forward group per avvisi LOW e boost pump failure.')" style="cursor:pointer">
+          <rect x="183" y="275" width="164" height="52" rx="4" fill="#0000cc" stroke="#00aaff" stroke-width="1.5"/>
+          <text x="265" y="299" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">850</text>
+          <text x="265" y="318" text-anchor="middle" fill="#666" font-size="8">FUSE REAR GROUP</text>
+        </g>
+
+        <!-- ── XFEED label ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[11] CROSSFEED VALVE APERTA: la scritta XFEED e il simbolo valvola appaiono quando la crossfeed valve è in posizione OPEN. Scompaiono quando la valvola torna in NORM (chiusa).')" style="cursor:pointer">
+          <text x="265" y="268" text-anchor="middle" fill="#00ff50" font-size="11">XFEED</text>
+          <circle cx="265" cy="252" r="11" fill="none" stroke="#00ff50" stroke-width="1.5"/>
+          <line x1="258" y1="252" x2="272" y2="252" stroke="#00ff50" stroke-width="1.5"/>
+        </g>
+
+        <!-- ── ITEM 8: CG WARNING ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[8] CG WARNING — REAR: squilibrio longitudinale carburante con baricentro spostato verso coda. Testo BIANCO su sfondo ROSSO. Richiede trasferimento correttivo verso il gruppo anteriore. FRONT = CG spostato in avanti.')" style="cursor:pointer">
+          <rect x="400" y="275" width="64" height="30" rx="4" fill="red"/>
+          <text x="432" y="288" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">CG</text>
+          <text x="432" y="300" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">REAR</text>
+        </g>
+
+        <!-- ── ITEM 16: SEL prompt ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[16] SELECTOR PROMPT — SEL: indica la selezione raccomandata dal sistema per ripristinare il bilanciamento carburante. Lampeggia per attirare l attenzione del pilota. In questo caso SEL = selezionare trasferimento XFER FWD.')" style="cursor:pointer">
+          <rect x="108" y="162" width="58" height="34" rx="4" fill="#220044" stroke="#cc00ff" stroke-width="1.5"/>
+          <text x="137" y="184" text-anchor="middle" fill="#cc00ff" font-size="11" font-weight="700">SEL</text>
+        </g>
+
+        <!-- ── ITEM 9: LOW PRES warnings ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[9] LOW PRESSURE WARNING: pressione bassa nella linea di alimentazione motore. Testo BIANCO su sfondo AMBRA. Se appare su entrambi i lati = emergenza critica. Avviso vocale contemporaneo su DWP.')" style="cursor:pointer">
+          <rect x="72" y="342" width="68" height="28" rx="4" fill="#cc8800"/>
+          <text x="106" y="354" text-anchor="middle" fill="#000" font-size="9" font-weight="700">LOW</text>
+          <text x="106" y="365" text-anchor="middle" fill="#000" font-size="8" font-weight="700">PRES</text>
+          <rect x="390" y="342" width="68" height="28" rx="4" fill="#cc8800"/>
+          <text x="424" y="354" text-anchor="middle" fill="#000" font-size="9" font-weight="700">LOW</text>
+          <text x="424" y="365" text-anchor="middle" fill="#000" font-size="8" font-weight="700">PRES</text>
+        </g>
+
+        <!-- ── ITEM 10: LP COCK indicators ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[10] LP COCK (Low Pressure Cock): mostrato APERTO con riempimento AMBRA e angolo di apertura (es. 71°). Barra orizzontale ambra = comandato SHUT. Riempimento ROSSO = valve failure. Controlla l apertura della valvola principale motore.')" style="cursor:pointer">
+          <circle cx="148" cy="356" r="14" fill="#cc8800" stroke="#cc8800" stroke-width="1"/>
+          <text x="148" y="360" text-anchor="middle" fill="#000" font-size="9" font-weight="700">71°</text>
+          <circle cx="430" cy="356" r="14" fill="#cc8800" stroke="#cc8800" stroke-width="1"/>
+          <text x="430" y="360" text-anchor="middle" fill="#000" font-size="9" font-weight="700">71°</text>
+        </g>
+
+        <!-- ── ITEM 12: Temp readout ── -->
+        <g class="mhdd-el" onclick="mhddClick(this,'[12] TEMPERATURA CARBURANTE: lettura reale da -40°C a +125°C. Sfondo AMBRA = CAT3 warning (T ≥ 86°C). Sfondo ROSSO = CAT2 warning (T ≥ 93°C). Due trigger indipendenti nel sistema di monitoraggio.')" style="cursor:pointer">
+          <rect x="6" y="168" width="30" height="20" rx="3" fill="#0d1525" stroke="#ffd600" stroke-width="1"/>
+          <text x="21" y="182" text-anchor="middle" fill="#ffd600" font-size="8">38°</text>
+        </g>
+
+        <!-- Soft key bar -->
+        <line x1="0" y1="382" x2="580" y2="382" stroke="#1a1a2e" stroke-width="1"/>
+        <text x="52" y="396" text-anchor="middle" fill="#00ff50" font-size="10" text-decoration="underline">FUEL</text>
+        <text x="150" y="396" text-anchor="middle" fill="#5a6a7a" font-size="10">ENG</text>
+        <text x="248" y="396" text-anchor="middle" fill="#5a6a7a" font-size="10">HYD</text>
+        <text x="346" y="396" text-anchor="middle" fill="#5a6a7a" font-size="10">WPT</text>
+        <text x="444" y="396" text-anchor="middle" fill="#5a6a7a" font-size="10">FREQ</text>
+
+        <!-- Left SK soft keys -->
+        <text x="3" y="60" fill="#00ff50" font-size="8">XFER STGI</text>
+        <text x="3" y="96" fill="#00ff50" font-size="8">XFER FWD</text>
+        <text x="3" y="132" fill="#00ff50" font-size="8">XFER REAR</text>
+        <text x="3" y="170" fill="#00ff50" font-size="8">TANK INTC</text>
+        <text x="3" y="210" fill="#00ff50" font-size="8">ELEV</text>
+        <!-- Right SK -->
+        <text x="524" y="60" fill="#00ff50" font-size="8">NORM</text>
+        <text x="516" y="96" fill="#00ff50" font-size="8">REFU TOT</text>
+        <text x="512" y="132" fill="#00ff50" font-size="8">REFU STRT</text>
+        <text x="512" y="170" fill="#00ff50" font-size="8">REFU STOP</text>
+        <text x="522" y="210" fill="#00ff50" font-size="8">HUD</text>
+        <text x="522" y="248" fill="#00ff50" font-size="8">STOR</text>
+      </svg>
+    </div>
+
+    <h3>Pannello GUH — Indicatori Reversionary</h3>
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 500 100" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+        <rect width="500" height="100" fill="#0a0a14" rx="8"/>
+        <text x="250" y="18" text-anchor="middle" fill="#3a5070" font-size="9" letter-spacing="2">GUH — FUEL CONTENTS INDICATORS (reversionary)</text>
+        <rect x="60" y="28" width="100" height="50" rx="4" fill="#0d1525" stroke="#34d399" stroke-width="1.5"/>
+        <text x="110" y="48" text-anchor="middle" fill="#34d399" font-size="9">FWD</text>
+        <text x="110" y="66" text-anchor="middle" fill="#00ff50" font-size="14" font-weight="700">1452</text>
+        <rect x="200" y="28" width="100" height="50" rx="4" fill="#0d1525" stroke="#34d399" stroke-width="1.5"/>
+        <text x="250" y="48" text-anchor="middle" fill="#34d399" font-size="9">REAR</text>
+        <text x="250" y="66" text-anchor="middle" fill="#00ff50" font-size="14" font-weight="700">1894</text>
+        <rect x="340" y="28" width="110" height="50" rx="4" fill="#0d1525" stroke="#ffd600" stroke-width="1.5"/>
+        <text x="395" y="48" text-anchor="middle" fill="#ffd600" font-size="9">TOTAL</text>
+        <text x="395" y="66" text-anchor="middle" fill="#00ff50" font-size="14" font-weight="700">3146</text>
+      </svg>
+    </div>
+    <p>I <strong>GUH indicators</strong> (3 display a 4 cifre: FWD, REAR, TOTAL) forniscono una visualizzazione <em>reversionary</em> del carburante, disponibile anche se il MHDD principale non è funzionante.</p>
+
+    <h3>Avvisi DWP + ACUE Prompts</h3>
+    <table class="fuel-table">
+      <thead><tr><th>DWP / ACUE</th><th>Voce</th><th>Significato</th><th>Colore</th></tr></thead>
+      <tbody>
+        <tr><td>L/R FUEL P</td><td>LEFT/RIGHT FUEL PRESSURE</td><td>Bassa pressione linea alimentazione</td><td style="color:#f87171">● ROSSO</td></tr>
+        <tr><td>FUEL</td><td>FUEL LOW</td><td>Uno o entrambi i gruppi &lt;375 kg</td><td style="color:#ffd600">● AMBRA</td></tr>
+        <tr><td>FUEL VLV</td><td>FUEL VALVE</td><td>Avaria valvola AAR</td><td style="color:#ffd600">● AMBRA</td></tr>
+        <tr><td>L/R FUEL T*</td><td>LEFT/RIGHT FUEL TEMP</td><td>Sovratemperatura (86°C/93°C)</td><td style="color:#ffd600">● AMBRA</td></tr>
+        <tr><td>L/R FUEL C</td><td>LEFT/RIGHT FUEL COMPUTER</td><td>Guasto fuel computer</td><td style="color:#f87171">● ROSSO</td></tr>
+        <tr><td>VENT</td><td>FUEL VENT</td><td>Anomalia pressione/temperatura vent</td><td style="color:#ffd600">● AMBRA</td></tr>
+        <tr><td>XFER</td><td>FUEL TRANSFER</td><td>Avaria trasferimento</td><td style="color:#ffd600">● AMBRA</td></tr>
+        <tr><td>BINGO 1-4</td><td>BINGO 1/2/3/4</td><td>Livelli carburante MDE raggiunti</td><td style="color:#818cf8">○ CAT4 voce</td></tr>
+        <tr><td>XFEED (ACUE)</td><td>—</td><td>XFEED in posizione OPEN</td><td style="color:#00e5a0">● VERDE</td></tr>
+        <tr><td>R/L LP COCK (ACUE)</td><td>—</td><td>LP Cock in posizione SHUT</td><td style="color:#ffd600">● AMBRA</td></tr>
+      </tbody>
+    </table>
+
+    <div class="example-box">
+      <div class="example-label">✦ BINGO Fuel — Definizione MDE</div>
+      <p>I 4 livelli BINGO vengono definiti dal pilota tramite il sottosistema <strong>MDE (Miscellaneous Data Entry)</strong> prima del volo. Tipicamente: BINGO 1 = carburante per rtb (return to base), BINGO 4 = emergenza critica. Al raggiungimento di ciascun livello viene generato un avviso CAT4 solo voce (no DWP caption). Il sistema BINGO è uno strumento di pianificazione tattica, non un sistema di sicurezza automatico.</p>
+    </div>
+  `
+};
+
+// FUEL COOLING interactive
+function setFCMode(mode) {
+  const btns = {normal:'fcBtn1', hot:'fcBtn2', decu:'fcBtn3'};
+  Object.keys(btns).forEach(k => {
+    const b = document.getElementById(btns[k]);
+    if (b) b.className = 'flow-btn' + (k === mode ? ' active' : '');
+  });
+  const flows = ['fc_f1','fc_f2','fc_f3','fc_f4','fc_f5','fc_f6','fc_oil1','fc_oil2','fc_oil3'];
+  flows.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity='0'; el.classList.remove('flow-active','flow-active-slow'); }
+  });
+  const show = (ids,cls='flow-active') => ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity='1'; el.classList.add(cls); }
+  });
+  const st = document.getElementById('fcStatus');
+  const tb = document.getElementById('fc_temp_text');
+  const tbox = document.getElementById('fc_temp_box');
+  if (mode === 'normal') {
+    show(['fc_oil1','fc_oil2','fc_oil3','fc_f1','fc_f2','fc_f3','fc_f4','fc_f5'],'flow-active-slow');
+    if(st) st.textContent='CROCIERA · CICLO DI RAFFREDDAMENTO ATTIVO';
+    if(tb) tb.textContent='T_out: ~55°C ✓';
+    if(tbox) tbox.style.stroke='#34d399';
+  } else if (mode === 'hot') {
+    show(['fc_oil1','fc_oil2','fc_oil3','fc_f1','fc_f2','fc_f3','fc_f4','fc_f5']);
+    if(st) st.textContent='ALTA TEMP · ATTENZIONE LIMITE 95°C';
+    if(tb) { tb.textContent='T_out: ~88°C ⚠ CAT3'; tb.style.fill='#ffd600'; }
+    if(tbox) tbox.style.stroke='#ffd600';
+  } else if (mode === 'decu') {
+    show(['fc_f5','fc_f6'],'flow-active-slow');
+    if(st) st.textContent='TAPPING DECU · CIRCUITO SEPARATO FCOC';
+    if(tb) tb.textContent='T_out: ~42°C ✓';
+    if(tbox) tbox.style.stroke='#e879f9';
+  }
+}
+
+// ENGINE FUEL SUPPLY interactive
+function setEFMode(mode) {
+  const btns = {normal:'efBtn1',bp_fail:'efBtn2',dc_emg:'efBtn3',xfeed:'efBtn4',apu:'efBtn5'};
+  Object.keys(btns).forEach(k => {
+    const b = document.getElementById(btns[k]);
+    if (b) b.className = 'flow-btn' + (k === mode ? ' active' : '');
+  });
+  const flows = ['ef_n1','ef_n2','ef_n3','ef_n4','ef_bpfail','ef_dc1','ef_xf1','ef_xf2','ef_xf3','ef_apu','ef_apu2'];
+  flows.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity='0'; el.classList.remove('flow-active','flow-active-slow'); }
+  });
+  const show = (ids,cls='flow-active') => ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity='1'; el.classList.add(cls); }
+  });
+  const bpL1 = document.getElementById('ef_bpL1');
+  const bpL1t = document.getElementById('ef_bpL1t');
+  const dcpump = document.getElementById('ef_dcpump');
+  const dct = document.getElementById('ef_dct');
+  const xfv = document.getElementById('ef_xfv');
+  const st = document.getElementById('efStatus');
+  // reset
+  [bpL1,dcpump,xfv].forEach(el => { if(el) el.style.stroke = el===xfv ? '#ffd600' : '#34d399'; });
+  if(dcpump) dcpump.style.stroke='#3a5070';
+  if(dct) dct.style.fill='#3a5070';
+
+  if (mode === 'normal') {
+    show(['ef_n1','ef_n2','ef_n3','ef_n4'],'flow-active-slow');
+    if(st) st.textContent='ALIMENTAZIONE NORMALE · BP AC ATTIVE';
+  } else if (mode === 'bp_fail') {
+    show(['ef_n2','ef_n3','ef_n4'],'flow-active-slow');
+    show(['ef_bpfail']);
+    if(bpL1) bpL1.style.stroke='#f87171';
+    if(bpL1t) bpL1t.style.fill='#f87171';
+    if(st) st.textContent='SINGLE BP FAIL · BP₁ GUASTA · BP₂ MANTIENE PRESSIONE';
+  } else if (mode === 'dc_emg') {
+    show(['ef_dc1'],'flow-active');
+    show(['ef_n3','ef_n4'],'flow-active-slow');
+    if(dcpump) dcpump.style.stroke='#f87171';
+    if(dct) dct.style.fill='#f87171';
+    if(st) st.textContent='DC PUMP EMERGENZA · TOTALE AC FAILURE · SOLO ENG L';
+  } else if (mode === 'xfeed') {
+    show(['ef_n1','ef_n2','ef_xf1','ef_xf2','ef_xf3'],'flow-active-slow');
+    if(xfv) xfv.style.stroke='#00e5a0';
+    if(st) st.textContent='CROSSFEED OPEN · FWD GROUP → ENTRAMBI I MOTORI';
+  } else if (mode === 'apu') {
+    show(['ef_apu','ef_apu2'],'flow-active-slow');
+    if(st) st.textContent='APU FEED · GRAVITY FEED DAL FWD COLLECTOR TANK';
+  }
+}
+
+// REFUELING interactive
+function setRFMode(mode) {
+  const btns = {ground_tot:'rfBtn1',ground_int:'rfBtn2',defuel:'rfBtn3',aar_probe:'rfBtn4',aar_contact:'rfBtn5'};
+  Object.keys(btns).forEach(k => {
+    const b = document.getElementById(btns[k]);
+    if (b) b.className = 'flow-btn' + (k === mode ? ' active' : '');
+  });
+  const flows = ['rf_gnd1','rf_gnd2','rf_g_fwd','rf_g_rear','rf_g_wing','rf_g_ext','rf_def1','rf_def2','rf_def3','rf_def4','rf_aar1','rf_aar2','rf_aar3','rf_aar4','rf_ucs1'];
+  flows.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity='0'; el.classList.remove('flow-active','flow-active-slow'); }
+  });
+  const show = (ids,cls='flow-active') => ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.opacity='1'; el.classList.add(cls); }
+  });
+  const st = document.getElementById('rfStatus');
+  const probe = document.getElementById('rf_probe');
+  const probUnlk = document.getElementById('rf_probUnlk');
+  const tanker = document.getElementById('rf_tanker');
+  if(probe) probe.style.stroke='#00aaff';
+  if(probUnlk) probUnlk.style.opacity='0';
+  if(tanker) tanker.style.stroke='#3a5070';
+
+  if (mode === 'ground_tot') {
+    show(['rf_gnd1','rf_gnd2','rf_g_fwd','rf_g_rear','rf_g_wing','rf_g_ext','rf_ucs1'],'flow-active-slow');
+    if(st) st.textContent='RIFORNIMENTO TERRA · TOT: INTERNI + ESTERNI SIMULTANEI';
+  } else if (mode === 'ground_int') {
+    show(['rf_gnd1','rf_gnd2','rf_g_fwd','rf_g_rear','rf_ucs1'],'flow-active-slow');
+    if(st) st.textContent='RIFORNIMENTO TERRA · INT: SOLO SERBATOI INTERNI';
+  } else if (mode === 'defuel') {
+    show(['rf_def1','rf_def2','rf_def3','rf_def4'],'flow-active');
+    if(st) st.textContent='DEFUELING · SVUOTAMENTO CARBURANTE VERSO BOWSER';
+  } else if (mode === 'aar_probe') {
+    if(probe) probe.style.stroke='#22d3ee';
+    if(probUnlk) probUnlk.style.opacity='1';
+    show(['rf_aar1'],'flow-active');
+    if(st) st.textContent='AAR PROBE ESTESA · PROB UNLK ILLUMINATO · IN ATTESA DROGUE';
+  } else if (mode === 'aar_contact') {
+    if(probe) probe.style.stroke='#22d3ee';
+    if(tanker) tanker.style.stroke='#22d3ee';
+    if(probUnlk) probUnlk.style.opacity='1';
+    show(['rf_aar1','rf_aar2','rf_aar3','rf_aar4'],'flow-active-slow');
+    if(st) st.textContent='AAR CONTATTO · FLUSSO CARBURANTE · RIEMPIMENTO IN CORSO';
+  }
+}
+
+// MHDD element click handler
+function mhddClick(el, info) {
+  const box = document.getElementById('mhddInfo');
+  if (box && info) {
+    box.textContent = info;
+    box.style.color = '#818cf8';
+    box.style.borderColor = 'rgba(129,140,248,0.4)';
+    box.style.background = 'rgba(129,140,248,0.14)';
+    el.querySelectorAll('rect,path,circle,line,polygon,text').forEach(e => {
+      const oc = e.style.filter;
+      e.style.filter = 'brightness(2)';
+      setTimeout(() => { e.style.filter = oc; }, 1600);
+    });
+  }
+}
+
+// Initialize flow diagrams after modal opens
+const origOpen = window.openModal;
+
+// CARD INTERSECTION OBSERVER
+const cards = document.querySelectorAll('.card');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, idx) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), idx * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+cards.forEach(card => observer.observe(card));
+
+// MODAL LOGIC
+const overlay = document.getElementById('overlay');
+const modalTitle = document.getElementById('modalTitle');
+const modalEyebrow = document.getElementById('modalEyebrow');
+const modalBody = document.getElementById('modalBody');
+const modalHeader = document.getElementById('modalHeader');
+const modalClose = document.getElementById('modalClose');
+
+function openModal(id) {
+  const data = modals[id];
+  if (!data) return;
+  modalEyebrow.textContent = data.eyebrow;
+  modalTitle.textContent = data.title;
+  modalBody.innerHTML = data.body;
+  modalHeader.style.setProperty('--modal-accent', data.accent);
+  modalBody.style.setProperty('--modal-accent', data.accent);
+  document.querySelector('.modal').style.setProperty('--modal-accent', data.accent);
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+cards.forEach(card => {
+  card.addEventListener('click', () => {
+    const id = card.getAttribute('data-modal');
+    openModal(id);
+  });
+});
+
+modalClose.addEventListener('click', closeModal);
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) closeModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
